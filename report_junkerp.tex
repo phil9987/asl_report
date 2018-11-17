@@ -90,8 +90,39 @@ To avoid a shared token amongst the workers, each worker maintains its own count
 Whenever a worker thread wants to access a server it uses the current counter value modulo the number of memcached server is used as an index to a list storing the server connections.
 On every balanced operation, the worker increases its counter.
 In expectation, this guarantees an even distribution of load, whitout incurring any coordination or hashing overhead.
-Sharded multiget requests are balanced similarly %TODO
+Sharded multiget requests are balanced similarly. In this setting a worker thread splits the keys into equally sized portions and sents each portion to one server, starting with its current round-robin index.
+Because the sharding scheme is a simple division, this leads to one server receiving one key more or less than the others.
+In expectation, this imbalance is avoided by choosing the starting server using the round-robin scheme and increasing the current round-robin index afterwards by the number of servers used.
+Each worker thread communicates blockingly with each server by sending requests and receiving responses one after another.
+Therefore the time to serve a sharded multiget request is at least as long as the slowest server requires to respond.
+For this project, non-blocking schemes were not considered in order to reduce complexity and keep service time analysis simple.
+Set requests are not load balanced but replicated to every server to the middleware.
+Again, replication is handled in a blocking way by forwarding the request to each server one after another.
+During the handling of a request in the middleware, various meta data is being attached to it, such as time and queue size when the request entered the middleware, number of cache misses, waiting time in queue, service time on memcached servers, total time spent in middleware and information about which servers have been contacted to service this request.
+This meta data is used to log statistics about the processed requests.
+The middleware logs into two files using the log4j2 library, one file for errors and one for aggregated request statistics.
+The error file is synchronized, in order to not lose information in case of a crash.
+The requests file is buffered and only flushed to file at the shutdown of the system if the buffer limit of 10MB is not reached (for the experiments taken for this report, the file has always been flushed at shutdown).
+According to the log4j2 documentation, its file appenders are synchronized and hence safe to use in a multi thread environment like the one presented here (with multiple worker threads logging infos about threads possibly simultaneously).
 
+In order to avoid massive amounts of log data I decided to do a lightweight aggregation inside my middleware.
+Every worker thread receives the same starting timestamp as well as the desired granularity of aggregation at creation which it uses to initialize its AggregationLogger.
+Whenever a request is finished for a worker thread, it hands the request object to its AggregationLogger.
+The AggregationLogger checks if the request timestamp at hand is in the current time window.
+If that's the case, the AggregationLogger will add the meta data of the request at hand to its sums.
+If not, it will write the aggregated data of the current time window and set the new period start time such that the request timestamp is in the curren time window (this is done by increasing the current start time by the desired granularity, e.g. 1s).
+The AggregationLogger only writes sums to the log, which means there are no errors in the aggregation data from e.g. division.
+In the aggregated log data there is one entry per second for every worker.
+To merge this data into one entry per second, the python script 'postprocessing.py' is used.
+
+To account for the startup and the cooldown phase, the first 5 seconds and the last 4 seconds of each log were dropped, to account for warmup and cooldown phase respectively.
+These durations were empirically determined by looking plots showing the performance of the middleware over time for various configurations.
+All aggregation windows are then aggregated into an overall per-run aggregate.
+For experiments with multiple middlewares, the log files of the middlewares are aggregated (using 'postprocessing.py') before creating the overall per-run aggregate.
+This is done for all three runs of each experiment, then averages and standard deviation are calculated.
+The results are then stored in the aggregated_avg directory from which plots were generated.
+The chosen aggregation approach discards information about standard deviations on the 1 second window of the aggregated log.
+This is assumed to be acceptable for the setup of this project, because it matches the format in which memtier provides the information as well as we are mainly interested in showing that the obtained results hold across multiple runs.
 
 
 
