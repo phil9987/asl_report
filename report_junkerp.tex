@@ -66,6 +66,7 @@ The networker thread reads any connected socket that becomes readable.
 An empty request structure is initialized during setup of a connection and stored using the Selector's attachment mechanism provided by Java NIO.
 The request structure, which is being discussed in more detail in the next paragraph, is used to parse and buffer incoming requests over the connection it is attached to and to store logs related to a request.
 
+% Explain how messages are parsed 
 Requests might arrive in multiple packets and therefore might not be complete within a single socket read operation.
 To make sure only complete requests are forwardet to the worker threads, the networker thread maintains a single request structure per connection into which incoming data is buffered until the request is complete.
 A single request structure per connection is sufficient because the system is closed, meaning clients wait until their previous request has been answered before sending the next one.
@@ -98,6 +99,8 @@ Therefore the time to serve a sharded multiget request is at least as long as th
 For this project, non-blocking schemes were not considered in order to reduce complexity and keep service time analysis simple.
 Set requests are not load balanced but replicated to every server to the middleware.
 Again, replication is handled in a blocking way by forwarding the request to each server one after another.
+
+% explain how statistics are gathered in a multi-threaded setting. 
 During the handling of a request in the middleware, various meta data is being attached to it, such as time and queue size when the request entered the middleware, number of cache misses, waiting time in queue, service time on memcached servers, total time spent in middleware and information about which servers have been contacted to service this request.
 This meta data is used to log statistics about the processed requests.
 The middleware logs into two files using the log4j2 library, one file for errors and one for aggregated request statistics.
@@ -127,7 +130,6 @@ This is assumed to be acceptable for the setup of this project, because it match
 
 
 
-% Explain how messages are parsed and how statistics are gathered in a multi-threaded setting. 
 % Provide figures containing all the threads and queues in your system (including the network and the memcached servers). 
 % Include illustrations that show how requests of different types are handled (e.g., components involved in processing the request and method calls). 
 % Please include all details necessary to understand artifacts and effects in your experiments that arise from your implementation choices.
