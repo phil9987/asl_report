@@ -48,48 +48,58 @@
 
 \newpage
 
-\section*{Notes on writing the report \small{(remove this page for submission)}}
-
-The report for the lab needs not be extensive but it must be concise, complete, and correct. 
-Conciseness is important in terms of content and explanations, focusing on what has been done and explanations of the results. A long report is not necessarily a better report, especially if there are aspects of the design or the experiments that remain unexplained. Completeness implies that the report should give a comprehensive idea of what has been done by mentioning all key aspects of the design, experiments, and analysis. Aspects of the system, be it of its design or of its behavior, that remain unexplained detract from the credibility and grade of the report. Correctness is expected in terms of the explanations being logical and correlated with the numbers in the experiments and the design.
-
-Remember that this is a report about the system you have designed and built, about the experiments you have performed, and about how you interpret the results of the experiments and map them to your design and implementation. Please do not contact us seeking confirmation and assurances about, e.g., whether the report is sufficient, your interpretation of the data, validation of concrete aspects of your design, or whether you have done enough experiments. Making those decisions is your job and part of what the course will evaluate.
-
-The report will be graded together with the code and data submitted. \textbf{You will need at least 400 points to pass.} You might be called for a meeting in person to clarify aspects of the report or the system. By submitting the report, the code, and the data, you confirm that you have done the work on your own, the code has been developed by yourself, the data submitted comes from experiments your have done, you have written the report on your own, and you have not copied neither code nor text nor data from other sources.
-
-Each section will have to contain a description of the experimental setup, graphs (where applicable) and tables with most important numbers. More importantly, each experiment and modeling result should be accompanied by an explanation that puts the result in the context of your system. Without proper explanations you risk losing most of the points in the experimental sections. Furthermore, it is expected that the interactive law holds for all experiments. In case throughput and response time do not match, it is imperative that you explain why, otherwise you risk losing most of the points for the experiment in question.
-
-In each section you can find a table summarizing the system configuration that should to be used for that particular section. These configurations should be considered as a guideline to help you find interesting configurations where we expect your system to change its behaviour (e.g., going from an under-saturated to a saturated system). If you do not observe such a change inside that range of parameters, you should expand the range and run additional experiments outside the given range. In that case, ask your assistant for advise.
-
-This document provides you with the end-results that have to be included in the report. Please keep in mind that you are encouraged to provide additional graphs and experiments that help you in understanding your system. These additional experiments should be chosen such that they support the claims you make in your explanations and help you illustrate your point.
-
-\section*{Formatting guidelines}
-We expect you to use this template for the report, but you are free to use another text processor. Keep in mind the following:
-\begin{itemize}
-	\item  We expect you to submit \textbf{a single PDF that has the same section structure as this template, and answers all points we outline here}. If you use this file, you should remove this page with notes, and the short description provided by us at the beginning of sections.
-	\item Keep the same cover page as on this document and \textbf{fill out your name and legi number}. Leave the grading table empty.
-	\item Write your name and Legi number on every page.
-	\item The main text should be in \textbf{single-column format with 11pt font on A4 paper}. In case you don't start with one of the files provided by us, \textbf{for margins use 2.54 cm (1~inch) on all sides}.
-	\item The length of report should be at minimum 20, but should not exceed 35 pages (including figures, tables, etc.). 
-\end{itemize}
-
-\subsection*{How to Generate Load and Populate the Data}
-
-To generate load on the system, you will use memtier. When using memtier, you can specify two parameters: the number of threads (CT) and the number of virtual clients per thread (VC). The total number of virtual clients per memtier is CPM=CT*VC. When referring to ``number of clients'' in the system, it is the number of memtier instances times the number of virtual clients per instance, i.e., NumClients=NumMemtier*CPM.
-
-Increasing NumClients for experiments is always done by first fixing the number of virtual machines (VMs) and memtier instances and then changing the VC setting for all memtiers. In most cases it is enough to increase VC in large increments, unless you want to explore the behavior of your system around the inflexion point or other points which are of interest. In this case, you can use more fine-grained steps.
-
-For all experiments, use 2 CT per VM and between 1 and 32 VC per thread. We recommend to choose at least 6 points in this range. You will have to use up to 3 VMs for clients. In case you use a single middleware, set up each memtier instance with 2 CTs. If you use two middlewares, start two memtier instances per VM (each connected to one middleware) with 1 CT each.
-
-For all experiments conducted in this report, the value size has to be 4096\,Bs, and the number of keys 10000 (\texttt{--key-maximum=10000}). Before running experiments, populate the key-value store using a write-only workload long enough to write all keys at least once. All sets should have a long expiry time, to ensure that keys are not evicted during the experiments (e.g., \texttt{--expiry-range=9999-10000}). The loading of the memcached servers is not part of the measured performance, and the middleware has to be restarted after the initial population, before running experiments. 
-
-\subsection*{Plotting Data}
-The readability of your graphs will be part of the grade. For all graphs the y-axis should start at 0, always use appropriate error metrics/bars, label both axis with units. For graphs that are related try to keep the same range on the x- and y-axis. Be careful when using log-scale on any of the axis. 
-\newpage
-
 \section{System Overview (75 pts)}
 
-Describe the implementation of your system and highlight design decisions relevant for the experiments. Explain how messages are parsed and how statistics are gathered in a multi-threaded setting. Provide figures containing all the threads and queues in your system (including the network and the memcached servers). Include illustrations that show how requests of different types are handled (e.g., components involved in processing the request and method calls). Please include all details necessary to understand artifacts and effects in your experiments that arise from your implementation choices.
+% Describe the implementation of your system and highlight design decisions relevant for the experiments. 
+My middleware is implemented as a consumer / producer system. 
+It has a single networking thread, the producer, which accepts incoming requests and puts it into the queue.
+On the other hand it has a configurable amount of worker threads, the consumers, which consume the queue.
+They are connected via a Java BlockingQueue. For this implementation I chose the LinkedBlockingQueue implementation because it provides thread safety, separate read and write locks and no maximum capacity.
+All threads are created and started by the main thread.
+In addition, the main thread also creates the request queue and registers a shutdown hook, which assures that all logfiles are written before the system terminates on a SIGTERM signal.
+% TODO: create system overview illustration and refer to it
+
+The networker thread handles the incoming connections from the clients and performs a minimal request parsing to determine whether a request is complete and therefore ready to be processed.
+For this, the networker uses Java's non-blocking I/O (NIO) mechanisms to set up an event polling loop over all connected sockets in its run method.
+A Selector, which is responsible to efficiently poll many file descriptors, is used to accept and register new connections.
+The networker thread reads any connected socket that becomes readable.
+An empty request structure is initialized during setup of a connection and stored using the Selector's attachment mechanism provided by Java NIO.
+The request structure, which is being discussed in more detail in the next paragraph, is used to parse and buffer incoming requests over the connection it is attached to and to store logs related to a request.
+
+Requests might arrive in multiple packets and therefore might not be complete within a single socket read operation.
+To make sure only complete requests are forwardet to the worker threads, the networker thread maintains a single request structure per connection into which incoming data is buffered until the request is complete.
+A single request structure per connection is sufficient because the system is closed, meaning clients wait until their previous request has been answered before sending the next one.
+This design choice leads to a minimum number of request object allocations and because request objects are being reused the garbage collector is only needed on system shutdown.
+Because of the closedness of the system no synchronization on the request object is necessary, even though it is being shared between networker and worker thread, as long as the worker never uses the object after the response has been sent to the client.
+
+Detecting whether a request is complete is done in a very simple way in order to reduce the work done in the networker thread.
+The isComplete function only checks whether the last byte of the buffer is equal to a newline character.
+The rest of the parsing is then done inside the worker thread. By checking the first character in the buffer, the worker thread determines whether it is a get or a set request.
+Furthermore, if it is a get request, it parses the other arguments to determine whether it is a multiget (more than 1 key) or a get request (exactly 1 key).
+For a set request no further parsing is required, because it can be forwarded as it is to the memcached servers.
+During the parsing the buffer data is never being copied during a normal run, neither into other buffers or into String objects.
+The only exception is in case an error occurs to make it easier to trace the error, and in this case the performance is not the main target anymore.
+To achieve this, the request object only maintains a list of offsets which indicate the position of space and newline characters in the header of the request.
+In sharding mode, the offsets will be used by the worker handling the request to create byte buffer slices for each key range.
+
+Each worker thread continuously reads blockingly from the queue in its run method.
+Once it gets a request, it parses its type and then chooses the correct function to handle it (handleGet, handleMultiget, handleSet).
+In case sharded mode is deactivated, handleMultiget is equivalent to handleGet.
+Get and non-sharded multiget requests are load balanced among all connected memcached servers using a round-robin scheme.
+To avoid a shared token amongst the workers, each worker maintains its own counter which is initialized by the main thread in a way that the worker threads are spread out evenly among the servers and vice versa.
+Whenever a worker thread wants to access a server it uses the current counter value modulo the number of memcached server is used as an index to a list storing the server connections.
+On every balanced operation, the worker increases its counter.
+In expectation, this guarantees an even distribution of load, whitout incurring any coordination or hashing overhead.
+Sharded multiget requests are balanced similarly %TODO
+
+
+
+
+
+% Explain how messages are parsed and how statistics are gathered in a multi-threaded setting. 
+% Provide figures containing all the threads and queues in your system (including the network and the memcached servers). 
+% Include illustrations that show how requests of different types are handled (e.g., components involved in processing the request and method calls). 
+% Please include all details necessary to understand artifacts and effects in your experiments that arise from your implementation choices.
 
 \section{Baseline without Middleware (75 pts)}
 
