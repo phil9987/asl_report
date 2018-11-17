@@ -120,7 +120,7 @@ These durations were empirically determined by looking plots showing the perform
 All aggregation windows are then aggregated into an overall per-run aggregate.
 For experiments with multiple middlewares, the log files of the middlewares are aggregated (using 'postprocessing.py') before creating the overall per-run aggregate.
 This is done for all three runs of each experiment, then averages and standard deviation are calculated.
-The results are then stored in the aggregated_avg directory from which plots were generated.
+The results are then stored in the $aggregated_avg$ directory from which plots were generated.
 The chosen aggregation approach discards information about standard deviations on the 1 second window of the aggregated log.
 This is assumed to be acceptable for the setup of this project, because it matches the format in which memtier provides the information as well as we are mainly interested in showing that the obtained results hold across multiple runs.
 
