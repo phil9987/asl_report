@@ -138,13 +138,9 @@ This is assumed to be acceptable for the setup of this project, because it match
 
 \section{Baseline without Middleware (75 pts)}
 
-In this experiments you study the performance characteristics of the memtier clients and memcached servers.
-
 \subsection{One Server}
 
-Both, for a read-only and write-only workload plot the throughput and the response time as a function of NumClients. All clients are connected to a single memcached instance.
-
-Use 3 load generating VMs, with one memtier (CT=2) each, and vary the number of virtual clients (VC) per memtier thread between 1 and 32. Show how the behavior of the server changes as we add more clients.
+In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots and show averages and standard deviations across three repetitions of each configuration. The configurations are shown in the table below.
 
 \begin{center}
 	\scriptsize{
