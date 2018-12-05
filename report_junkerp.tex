@@ -140,7 +140,7 @@ This is assumed to be acceptable for the setup of this project, because it match
 
 \subsection{One Server}
 
-In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots and show averages and standard deviations across three repetitions of each configuration. The configurations are shown in the table below.
+In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The configurations are shown in the table below.
 
 \begin{center}
 	\scriptsize{
@@ -167,9 +167,24 @@ In this section, the maximum capacity of a single memcached server is examined. 
         \includegraphics[width=1\linewidth]{plots/2_1_latency.eps}
         \caption{Response Time}
     \end{subfigure}
-    \caption{Baseline without Middleware, One Server}
+    \caption{Baseline without Middleware and one Server}
     \label{fig:2-1}
 \end{figure}
+
+\begin{table}
+    \begin{center}
+        \scriptsize{
+          \begin{tabular}{|ccc|}
+            \hline
+            \textbf{Client} & \textbf{Middleware} & \textbf{Server}\\
+            25.1 MB/s & 100.0 MB/s & 12.6 MB/s\\
+            \hline
+          \end{tabular}
+        }
+      \caption{Network Capacities (outgoing)}
+      \label{link-caps}
+    \end{center}
+\end{table}
 
 \subsubsection{Explanation}
 
@@ -178,9 +193,7 @@ Describe in which phase the memcached servers are under-saturated, saturated, or
 
 \subsection{Two Servers}
 
-For a read-only and write-only workload plot throughput and response time as a function of NumClients. The clients are connected to two memcached instances. 
-
-Use 1 load generating VM, with one memtier (CT=1) connected to each memcached instance (two memcache instances in total), and vary the number of virtual clients (VC) per memtier thread between 1 and 32. Show how the behavior of the server changes and explain what conclusions we can draw from this experiment.
+In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput both memtier threads. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The configurations are shown in the table below.
 
 \begin{center}
 	\scriptsize{
@@ -200,24 +213,14 @@ Use 1 load generating VM, with one memtier (CT=1) connected to each memcached in
 
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/2_2a_throughputMemtier.eps}
+        \includegraphics[width=1\linewidth]{plots/2_2_throughput.eps}
         \caption{Throughput, read only}
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/2_2b_throughputMemtier.eps}
-        \caption{Throughput, write only}
-    \end{subfigure}
-    
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/2_2a_latencyMemtier.eps}
+        \includegraphics[width=1\linewidth]{plots/2_2_latency.eps}
         \caption{Response Time, read only}
     \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/2_2b_latencyMemtier.eps}
-        \caption{Response Time, write only}
-    \end{subfigure}
-
-    \caption{Baseline Without Middleware, Two Servers}
+    \caption{Baseline without Middleware and two Servers}
     \label{fig:2-2}
 \end{figure}
 \subsubsection{Explanation}
