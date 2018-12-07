@@ -140,7 +140,7 @@ This is assumed to be acceptable for the setup of this project, because it match
 
 \subsection{One Server}
 
-In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time seperately and it was found that the interactive law aligns with the measured data. The configurations are shown in the table below.
+In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in the table below.
 
 \begin{center}
 	\scriptsize{
@@ -188,9 +188,12 @@ In this section, the maximum capacity of a single memcached server is examined. 
 
 \subsubsection{Explanation}
 %Describe in which phase the memcached servers are under-saturated, saturated, or over-saturated. Describe how throughput and response time correlate. Explain what further conclusions can be drawn from the experiment.
-For read-only workload, the large value size of 4096 bytes causes GET responses to fully exhaust the outgoing capacity of the server's network link, while the CPU remains underutilized. Clearly, the bottleneck lies on the network capabilities, namely the upload, of the single memcached server. The collected dstat data shows an average upload of 12.41MB/s already for the first configuration with 6 virtual clients in total (see \autoref{dstat:2-1}). Because this value is very close to the maximum outgoing link capacity of the server machines shown in \autoref{link-caps}, which was measured using iperf, we can conclude that this indeed is the bottleneck in this system for read-only workload.
+For read-only workload, the large value size of 4096 bytes causes GET responses to fully exhaust the outgoing capacity of the server's network link, while the CPU remains underutilized. Clearly, the bottleneck lies on the network capabilities, namely the upload, of the single memcached server. The collected dstat data shows an average upload of 12.41MB/s already for the first configuration with 6 virtual clients in total (see \autoref{dstat:2-1}). Because this value is very close to the maximum outgoing link capacity of the server machines shown in \autoref{link-caps}, which was measured using iperf, we can conclude that this indeed is the bottleneck in this system for read-only workload. The system is already with 6 virtual clients in total saturated because of the above mentioned bottleneck.
 
 For write-only workload, the request size is large compared to the server response. The outgoing link capacity of the server should therefore not be the problem anymore. And indeed, this time outgoing network activities for both client and server machines stayed within their outgoing link capacities. However, for the memcached server a CPU utilization of 96\% has been measured for 32 virtual clients per thread as shown in \autoref{dstat:2-1} b). Clearly, the  bottleneck for the write-only workload is cpu bound on the memcached server side.
+Up until 120 virtual clients in total the system  is under-saturated because with a higher amount of virtual clients the throughput increases until this point. After that point the system is in the saturation phase where the throughput stays the same while the response time increases linearly with more virtual clients.
+
+The over-saturated phase has not been reached for both read and write-only during the experiments, this conclusion comes from the fact that only a linear increase of response time has been observed for an increasing amount of clients.
 
 \begin{table}
     \begin{subtable}{.5\linewidth}\centering
@@ -239,7 +242,7 @@ For write-only workload, the request size is large compared to the server respon
 
 \subsection{Two Servers}
 
-In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput both memtier threads. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time seperately and it was found that the interactive law aligns with the measured data. The configurations are shown in the table below.
+In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of both memtier threads. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in the table below.
 
 \begin{center}
 	\scriptsize{
@@ -251,7 +254,8 @@ In this section, the maximum load generation capacity of a single memtier instan
 			\hline Virtual clients per thread (write-only)  & [1,3,6,12,20,32]         \\ 
 			\hline Virtual clients per thread (read-only)   & [1,2,3,4,5,6,32]         \\ 
 			\hline Workload                                 & Write-only and Read-only \\
-			\hline Repetitions                              & 3                        \\ 
+			\hline Repetitions                              & 
+			3                        \\ 
 			\hline 
 		\end{tabular}
 	} 
@@ -271,7 +275,55 @@ In this section, the maximum load generation capacity of a single memtier instan
 \end{figure}
 \subsubsection{Explanation}
 
-Describe how this experiment compares to the previous section. Which results are the same and which ones differ? Explain what further conclusions can be drawn from the experiment.
+%Describe how this experiment compares to the previous section. Which results are the same and which ones differ? Explain what further conclusions can be drawn from the experiment.
+For both read-only and write-only workload the system is under-saturated up until 6 virtual clients in total. This is derived from the fact that throughput is increasing significantly while the response time increases linearly in this phase. From 6 virtual clients on, the throughput does not increase at all for read-only and only very little for write-only workload while the response time continues to increase linearly for both. Hence from 6 virtual clients on the system is in saturation phase for both read-only and write-only workload. No over-saturation has been observed for both workload types.
+
+For the read-only workload the bottleneck is again at the server, namely the outgoing network capacity. As can be seen in \autoref{dstat:2-2} (a) the server reaches an average outgoing network traffic of 12.47MB/s for 6 virtual memtier clients in total. This is very close to the previously presented maximum outgoing network capacity of the server machines (12.6MB/s) (see \autoref{link-caps}). Therefore, the system is saturated from 6 virtual memtier clients on. Before this point, the system is under-saturated for read-only workload.  An over-saturation has not been observed during the experiment.
+
+For the write-only workload the bottleneck has been identified at the outgoing network capacity of the single memtier client. As shown in \autoref{dstat:2-2} (d) the client reaches an average outgoing network traffic of 24.80MB/s for 12 virtual memtier clients in total. This is very close to the maximum outgoing network capacity of the client machines (25.1MB/s) presented \autoref{link-caps}. Even though the increase of throughput is very little from 6 virtual clients to 12 virtual clients, the outgoing network traffic measured at the client machine for 6 virtual clients was 24.2MB/s which still is 0.9MB/s away from the measured maximum. This is the reason the beginning of the saturation phase starts only at 12 virtual clients for write-only workload and the maximum throughput is measured with 12 virtual clients. Before this point the system is under-saturated. An over-saturation has not been observed during the experiment.
+
+\begin{table}
+    \begin{subtable}{.5\linewidth}\centering
+        {\begin{tabular}{|ccc|}
+            \hline
+            \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
+            11.17\%         & 12.47 MB/s    & 0.44 MB/s\\
+            \hline
+        \end{tabular}
+        \caption{Server, read-only, 6 memtier clients in total}}
+    \end{subtable}
+    \begin{subtable}{.5\linewidth}\centering
+        {\begin{tabular}{|ccc|}
+            \hline
+            \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
+            11.00\%        & 0.42 MB/s     & 12.96 MB/s\\
+            \hline
+        \end{tabular}
+        \caption{Server, write-only,  12 memtier clients in total}}
+    \end{subtable}
+    \begin{subtable}{.5\linewidth}\centering
+        {\begin{tabular}{|ccc|}
+            \hline
+            \textbf{Avg CPU} & \textbf{Avg Send} & \textbf{Avg Receive}\\
+            23.50\%           & 0.87 MB/s     & 25.01 MB/s\\
+            \hline
+        \end{tabular}
+        \caption{Clients, read-only, 6 memtier clients in total}}
+    \end{subtable}
+    \begin{subtable}{.5\linewidth}\centering
+        {\begin{tabular}{|ccc|}
+            \hline
+            \textbf{Avg CPU} & \textbf{Avg Send} & \textbf{Avg Receive}\\
+            15.98\%       & 24.80 MB/s     & 0.83 MB/s\\
+            \hline
+        \end{tabular}
+        \caption{Clients, write-only, 12 memtier clients in total}}
+    \end{subtable}
+
+    \caption{Machine Stats during Experiment 2.2}
+    \label{dstat:2-2}
+\end{table}
+
 
 
 \subsection{Summary}
@@ -281,9 +333,9 @@ Based on the experiments above, fill out the following table:
 \begin{center}
 	{Maximum throughput of different VMs.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
-		\hline                        & Read-only workload & Write-only workload & Configuration gives max. throughput \\ 
-		\hline One memcached server   &                    &                     &                                     \\ 
-		\hline One load generating VM &                    &                     &                                     \\ 
+		\hline                        & Read-only workload [req/s] & Write-only workload [req/s] & Configuration gives max. throughput \\ 
+		\hline One memcached server   &          2936.6          &      14791.0               &            read-only: 6 virtual clients \newline write-only: 120 virtual clients                         \\ 
+		\hline One load generating VM &        5853.8            &          5996.2           &         read-only: 6 virtual clients \newline write-only: 12 virtual clients                            \\ 
 		\hline 
 	\end{tabular}
 \end{center}
