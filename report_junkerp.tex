@@ -255,10 +255,10 @@ For the write-only workload the bottleneck has been identified at the outgoing n
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, read-only, 6 memtier clients in total & 11.17\%         & 12.47 MB/s    & 0.44 MB/s\\
-            \hline Clients, read-only, 6 memtier clients in total & 23.50\%           & 0.87 MB/s     & 25.01 MB/s\\
-            \hline Server, write-only,  12 memtier clients in total & 11.00\%        & 0.42 MB/s     & 12.96 MB/s\\
-            \hline Clients, write-only, 12 memtier clients in total & 15.98\%       & 24.80 MB/s     & 0.83 MB/s\\
+            \hline Server, read-only, 8 memtier clients in total & 11.40\%         & 12.45 MB/s    & 0.44 MB/s\\
+            \hline Clients, read-only, 8 memtier clients in total & 21.34\%           & 0.87 MB/s     & 24.95 MB/s\\
+            \hline Server, write-only,  6 memtier clients in total & 12.50\%        & 0.42 MB/s     & 12.88 MB/s\\
+            \hline Clients, write-only, 6 memtier clients in total & 17.91\%       & 24.66 MB/s     & 0.83 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during Experiment 2.2}
@@ -276,8 +276,8 @@ Based on the experiments above, fill out the following table:
 	{Maximum throughput of different VMs.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
 		\hline                        & Read-only workload [req/s] & Write-only workload [req/s] & Configuration gives max. throughput \\ 
-		\hline One memcached server   &          2936.6          &      14791.0               &            read-only: 6 virtual clients \newline write-only: 120 virtual clients                         \\ 
-		\hline One load generating VM &        5853.8            &          5996.2           &         read-only: 6 virtual clients \newline write-only: 12 virtual clients                            \\ 
+		\hline One memcached server   &          2937          &      14791               &            read-only: 6 virtual clients \newline write-only: 120 virtual clients                         \\ 
+		\hline One load generating VM &        5847            &          5943           &         read-only: 8 virtual clients \newline write-only: 6 virtual clients                            \\ 
 		\hline 
 	\end{tabular}
 \end{center}
