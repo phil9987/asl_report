@@ -567,8 +567,6 @@ For each of the two workloads, what is the impact of these parameters on through
 			\hline Threads per memtier instance     & 2 (1 middleware) or 1 (2 middlewares)   \\
 			\hline Virtual clients per thread       &  32                                     \\ 
 			\hline Workload                         & Write-only and Read-only\\
-			\hline Multi-Get behavior               & N/A                                         \\
-			\hline Multi-Get size                   & N/A                                         \\
 			\hline Number of middlewares            & 1 and 2                                     \\
 			\hline Worker threads per middleware    & 8 and 32                                    \\
 			\hline Repetitions                      & 3 or more (at least 1 minute each)                                   \\ 
@@ -576,6 +574,149 @@ For each of the two workloads, what is the impact of these parameters on through
 		\end{tabular}
 	} 
 \end{center}
+
+\subsection{Read-only Workload}
+
+
+\begin{table}
+    \begin{subtable}{1.0\linewidth}\centering
+        %{\begin{tabular}{|cccccccc|cc|}
+        {\begin{tabular}{lllllllllrr}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                    1 &     -1 &       -1 &     -1 &      1 &      1 &       1 &      -1 & 2936.411 &   0.904 \\
+                    1 &     -1 &       -1 &      1 &      1 &     -1 &      -1 &       1 & 2941.454 &   3.843 \\
+                    1 &     -1 &        1 &     -1 &     -1 &     -1 &       1 &       1 & 8702.579 &  26.966 \\
+                    1 &     -1 &        1 &      1 &     -1 &      1 &      -1 &      -1 & 8803.022 &   3.089 \\
+                    1 &      1 &       -1 &     -1 &     -1 &      1 &      -1 &       1 & 2940.514 &   2.471 \\
+                    1 &      1 &       -1 &      1 &     -1 &     -1 &       1 &      -1 & 2942.596 &   0.192 \\
+                    1 &      1 &        1 &     -1 &      1 &     -1 &      -1 &      -1 & 8804.268 &   2.778 \\
+                    1 &      1 &        1 &      1 &      1 &      1 &       1 &       1 & 8797.934 &  24.191 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+              5858.597 & 12.731 & 2918.354 & 12.654 & 11.419 & 10.873 & -13.717 & -12.977 & /8 & - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Throughput}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+            0.002\% & 99.989\% & 0.002\% & 0.002\%   &  0.001\%   &   0.002\%  &   0.002\%   & 0.000\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Throughput}}
+    \end{subtable}
+
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|cc|}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                  1 &     -1 &      -1 &     -1 &      1 &      1 &     1 &    -1 & 64.356 &   0.033 \\
+                  1 &     -1 &      -1 &      1 &      1 &     -1 &    -1 &     1 & 64.188 &   0.094 \\
+                  1 &     -1 &       1 &     -1 &     -1 &     -1 &     1 &     1 & 21.098 &   0.073 \\
+                  1 &     -1 &       1 &      1 &     -1 &      1 &    -1 &    -1 & 20.802 &   0.013 \\
+                  1 &      1 &      -1 &     -1 &     -1 &      1 &    -1 &     1 & 63.904 &   0.047 \\
+                  1 &      1 &      -1 &      1 &     -1 &     -1 &     1 &    -1 & 63.966 &   0.002 \\
+                  1 &      1 &       1 &     -1 &      1 &     -1 &    -1 &    -1 & 20.528 &   0.004 \\
+                  1 &      1 &       1 &      1 &      1 &      1 &     1 &     1 & 20.611 &   0.077 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+             42.431 & -0.179 & -21.672 & -0.040 & -0.011 & -0.013 & 0.076 & 0.019 &      /8 &       - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Response Time}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+       {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+              0.007\% &  99.991\% &  0.000\% &  0.000\% &  0.000\% & 0.001\% & 0.000\% &  0.001\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Response Time}}
+    \end{subtable}
+
+    \caption{2K Analysis, Read-only Workload}
+    \label{2k:read-only}
+\end{table}
+
+\subsection{Write-only Workload}
+
+
+\begin{table}
+    \begin{subtable}{1.0\linewidth}\centering
+        %{\begin{tabular}{|cccccccc|cc|}
+        {\begin{tabular}{lllllllllrr}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                    1 &       -1 &       -1 &       -1 &        1 &      1 &       1 &    -1 &  6820.136 &  16.917 \\
+                    1 &       -1 &       -1 &        1 &        1 &     -1 &      -1 &     1 &  8557.913 &  38.062 \\
+                    1 &       -1 &        1 &       -1 &       -1 &     -1 &       1 &     1 &  5333.355 & 174.900 \\
+                    1 &       -1 &        1 &        1 &       -1 &      1 &      -1 &    -1 &  7240.880 &  35.038 \\
+                    1 &        1 &       -1 &       -1 &       -1 &      1 &      -1 &     1 & 10573.918 &  23.666 \\
+                    1 &        1 &       -1 &        1 &       -1 &     -1 &       1 &    -1 & 13065.804 &  12.610 \\
+                    1 &        1 &        1 &       -1 &        1 &     -1 &      -1 &    -1 &  8110.258 &  15.192 \\
+                    1 &        1 &        1 &        1 &        1 &      1 &       1 &     1 & 10789.416 &  59.709 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+             8811.460 & 1823.389 & -942.983 & 1102.043 & -242.029 & 44.627 & 190.718 & 2.190 &  /8 &       - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Throughput}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+            60.172\% &   16.093\% &   21.980\% &    1.060\% &  0.036\% &   0.658\% & 0.000\% &     0.000\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Throughput}}
+    \end{subtable}
+
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|cc|}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                  1 &     -1 &     -1 &     -1 &      1 &      1 &     1 &    -1 & 27.219 &   0.061 \\
+                  1 &     -1 &     -1 &      1 &      1 &     -1 &    -1 &     1 & 21.378 &   0.045 \\
+                  1 &     -1 &      1 &     -1 &     -1 &     -1 &     1 &     1 & 35.060 &   1.193 \\
+                  1 &     -1 &      1 &      1 &     -1 &      1 &    -1 &    -1 & 25.521 &   0.140 \\
+                  1 &      1 &     -1 &     -1 &     -1 &      1 &    -1 &     1 & 16.914 &   0.032 \\
+                  1 &      1 &     -1 &      1 &     -1 &     -1 &     1 &    -1 & 13.575 &   0.050 \\
+                  1 &      1 &      1 &     -1 &      1 &     -1 &    -1 &    -1 & 21.570 &   0.091 \\
+                  1 &      1 &      1 &      1 &      1 &      1 &     1 &     1 & 16.604 &   0.092 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+             22.230 & -5.064 &  2.459 & -2.961 & -0.537 & -0.666 & 0.885 & 0.259 &  /8 &       - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Response Time}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+       {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+            60.745\% & 14.316\% & 20.760\% &  0.684\% &  1.049\% & 1.853\% & 0.159\% &  0.435\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Response Time}}
+    \end{subtable}
+
+    \caption{2K Analysis, Write-only Workload}
+    \label{2k:write-only}
+\end{table}
+
 
 \section{Queuing Model (90 pts)}
 
