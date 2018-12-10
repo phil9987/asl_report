@@ -324,17 +324,52 @@ Repeat this experiment for different number of worker threads inside the middlew
         \includegraphics[width=1\linewidth]{plots/3_1b_throughputMiddleware.eps}
         \caption{Throughput, write only}
     \end{subfigure}
+    \caption{Throughput of baseline with one Middleware, one Server}
+    \label{fig:3-1-throughput}
+\end{figure}
+
+\begin{figure}
     \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/3_1a_latencyMiddleware.eps}
-        \caption{Response Time, read only}
+        \includegraphics[width=1\linewidth]{plots/3_1a_extendedLatencyMiddleware_8w.eps}
+        \caption{8 worker threads}
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/3_1b_latencyMiddleware.eps}
-        \caption{Response Time, write only}
+        \includegraphics[width=1\linewidth]{plots/3_1a_extendedLatencyMiddleware_16w.eps}
+        \caption{16 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_1a_extendedLatencyMiddleware_32w.eps}
+        \caption{32 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_1a_extendedLatencyMiddleware_64w.eps}
+        \caption{64 worker threads}
     \end{subfigure}
 
-    \caption{Baseline with one Middleware, one Server}
-    \label{fig:3-1}
+    \caption{Response-, Queue- and Server-Service-Times of baseline with one Middleware, one Server, Read-only workload}
+    \label{fig:3-1-times-readonly}
+\end{figure}
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_1b_extendedLatencyMiddleware_8w.eps}
+        \caption{8 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_1b_extendedLatencyMiddleware_16w.eps}
+        \caption{16 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_1b_extendedLatencyMiddleware_32w.eps}
+        \caption{32 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_1b_extendedLatencyMiddleware_64w.eps}
+        \caption{64 worker threads}
+    \end{subfigure}
+
+    \caption{Response-, Queue- and Server-Service-Times of baseline with one Middleware, one Server, Write-only workload}
+    \label{fig:3-1-times-writeonly}
 \end{figure}
 
 \subsubsection{Explanation}
@@ -377,17 +412,54 @@ If in your experiment the middleware is not the bottleneck, repeat the experimen
         \includegraphics[width=1\linewidth]{plots/3_2b_throughputMiddleware.eps}
         \caption{Throughput, write only}
     \end{subfigure}
+
+    \caption{Throughput of baseline with two Middlewares, one Server}
+    \label{fig:3-2-throughput}
+\end{figure}
+
+
+\begin{figure}
     \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/3_2a_latencyMiddleware.eps}
-        \caption{Response Time, read only}
+        \includegraphics[width=1\linewidth]{plots/3_2a_extendedLatencyMiddleware_8w.eps}
+        \caption{8 worker threads}
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/3_2b_latencyMiddleware.eps}
-        \caption{Response Time, write only}
+        \includegraphics[width=1\linewidth]{plots/3_2a_extendedLatencyMiddleware_16w.eps}
+        \caption{16 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2a_extendedLatencyMiddleware_32w.eps}
+        \caption{32 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2a_extendedLatencyMiddleware_64w.eps}
+        \caption{64 worker threads}
     \end{subfigure}
 
-    \caption{Baseline with two Middlewares, one Server}
-    \label{fig:3-2}
+    \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, Read-Only workload}
+    \label{fig:3-2-times-readonly}
+\end{figure}
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2b_extendedLatencyMiddleware_8w.eps}
+        \caption{8 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2b_extendedLatencyMiddleware_16w.eps}
+        \caption{16 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2b_extendedLatencyMiddleware_32w.eps}
+        \caption{32 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2b_extendedLatencyMiddleware_64w.eps}
+        \caption{64 worker threads}
+    \end{subfigure}
+
+    \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, Write-Only workload}
+    \label{fig:3-2-times-readonly}
 \end{figure}
 
 \subsubsection{Explanation}
