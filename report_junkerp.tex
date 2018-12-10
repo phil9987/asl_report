@@ -545,13 +545,13 @@ Provide a detailed comparison of the sharded and non-shareded modes. For which m
 
 \section{2K Analysis (90 pts)}
 
-For 3 client machines (with 64 total virtual clients per client VM) measure the throughput and response time of your system in a 2k experiment with repetitions. All GET operations have a single key. Investigate the following parameters:
+In this section, a 2k analysis for k=3 is being performed. With this, the impact of the number of memcached servers, the number of worker threads and the number of middlewares (as well as any combination of these) on throughput and response time is derived. The following parameter choices are being investigated:
 
 \begin{itemize}
 		
-	\item Memcached servers: 1 and 3
-	\item Middlewares: 1 and 2
-	\item Worker threads per MW: 8 and 32
+	\item Worker threads per MW $x_a \in \{8, 32\}$
+	\item Number of memcached servers $x_b \in \{1, 3\}$
+	\item Number of middlewares $x_c \in \{1,2\}$
 	      	      
 \end{itemize}
 
@@ -563,13 +563,13 @@ For each of the two workloads, what is the impact of these parameters on through
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                & 1 and 3                                     \\ 
 			\hline Number of client machines        & 3                                           \\ 
-			\hline Instances of memtier per machine & 1 (1 middleware) or 2 (2 middlewares) \\ 
-			\hline Threads per memtier instance     & 2 (1 middleware) or 1 (2 middlewares)   \\
-			\hline Virtual clients per thread       &  32                                     \\ 
-			\hline Workload                         & Write-only and Read-only\\
+			\hline Instances of memtier per machine & 1 (1 middleware) or 2 (2 middlewares)       \\ 
+			\hline Threads per memtier instance     & 2 (1 middleware) or 1 (2 middlewares)       \\
+			\hline Virtual clients per thread       & 32                                          \\ 
+			\hline Workload                         & Write-only and Read-only                    \\
 			\hline Number of middlewares            & 1 and 2                                     \\
 			\hline Worker threads per middleware    & 8 and 32                                    \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                                   \\ 
+			\hline Repetitions                      & 3                                   \\ 
 			\hline 
 		\end{tabular}
 	} 
@@ -577,6 +577,11 @@ For each of the two workloads, what is the impact of these parameters on through
 
 \subsection{Read-only Workload}
 
+\autoref{2k:read-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a read-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed.
+- clearly, server is bottleneck. dstat confirms that as well, 12.5MB/S avg upload per server
+- throughput and response time must be in close relationship. It is expected that factors that strongly influence throughput inversely influence response time in an equally strong way.
+- refer to section 2 / 3
+\todo{compactify, just mention the effect and allocation of Variance. See example from Valentin}
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
@@ -647,7 +652,8 @@ For each of the two workloads, what is the impact of these parameters on through
 \end{table}
 
 \subsection{Write-only Workload}
-
+\autoref{2k:write-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a write-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed. We observe that for write-only workload $x_a$, the number of worker threads has the most significant effect on the system followed by the number of middlewares $x_b$. The number of memcached servers, $x_b$, has the lowest effect for write-only workload. This makes sense because for write-only workload the servers do not need to send massive amounts of data but only receive and store. The bottleneck this time lies in the middleware, where we can even observe the maximum outgoing link capacity of 100MB/s being reached for the configuration with 1 middleware and 3 servers.
+\todo{mention other chapters, link to chaper 2/3/4}
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
