@@ -245,20 +245,21 @@ In this section, the maximum load generation capacity of a single memtier instan
 \subsubsection{Explanation}
 
 %Describe how this experiment compares to the previous section. Which results are the same and which ones differ? Explain what further conclusions can be drawn from the experiment.
-For both read-only and write-only workload the system is under-saturated up until 6 virtual clients in total. This is derived from the fact that throughput is increasing significantly while the response time increases linearly in this phase. From 6 virtual clients on, the throughput does not increase at all for read-only and only very little for write-only workload while the response time continues to increase linearly for both. Hence from 6 virtual clients on the system is in saturation phase for both read-only and write-only workload. No over-saturation has been observed for both workload types.
 
-For the read-only workload the bottleneck is again at the server, namely the outgoing network capacity. As can be seen in \autoref{dstat:2-2} (a) the server reaches an average outgoing network traffic of 12.47MB/s for 6 virtual memtier clients in total. This is very close to the previously presented maximum outgoing network capacity of the server machines (12.6MB/s) (see \autoref{link-caps}). Therefore, the system is saturated from 6 virtual memtier clients on. Before this point, the system is under-saturated for read-only workload.  An over-saturation has not been observed during the experiment. 
+For read-only workload the system is under-saturated up until 8 virtual clients in total. This is derived from the fact that throughput is increasing significantly while the response time remains almost constant (see \autoref{fig:2-2}). From 8 virtual clients on, the throughput does not increase anymore while the response time continues to increase linearly. On the response time plot a knee is clearly visible. From this point on the system is saturated.
+For read-only workload the bottleneck is again at the server, namely the outgoing network capacity. As can be seen in \autoref{dstat:2-2} (a) the server reaches an average outgoing network traffic of 12.47MB/s for 6 virtual memtier clients in total. This is very close to the previously presented maximum outgoing network capacity of the server machines (12.6MB/s) (see \autoref{link-caps}). Therefore, the system is saturated from 6 virtual memtier clients on. Before this point, the system is under-saturated for read-only workload.  An over-saturation has not been observed during the experiment. 
 
+For write-only workload the system is under-saturated up until 6 virtual clients in total. This is derived from the fact that throughput is increasing significantly while the response time remains almost constant (see \autoref{fig:2-2}). From 6 virtual clients on, the throughput does not increase anymore while the response time continues to increase linearly. From this point on, the system is saturated.
 For the write-only workload the bottleneck has been identified at the outgoing network capacity of the single memtier client. As shown in \autoref{dstat:2-2} (d) the client reaches an average outgoing network traffic of 24.80MB/s for 12 virtual memtier clients in total. This is very close to the maximum outgoing network capacity of the client machines (25.1MB/s) presented \autoref{link-caps}. Even though the increase of throughput is very little from 6 virtual clients to 12 virtual clients, the outgoing network traffic measured at the client machine for 6 virtual clients was 24.2MB/s which still is 0.9MB/s away from the measured maximum. This is the reason the beginning of the saturation phase starts only at 12 virtual clients for write-only workload and the maximum throughput is measured with 12 virtual clients. Before this point the system is under-saturated. An over-saturation has not been observed during the experiment.
 
 \begin{center}
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, read-only, 6 memtier clients in total & 11.17\%         & 12.47 MB/s    & 0.44 MB/s\\
-            \hline Clients, read-only, 6 memtier clients in total & 23.50\%           & 0.87 MB/s     & 25.01 MB/s\\
-            \hline Server, write-only,  12 memtier clients in total & 11.00\%        & 0.42 MB/s     & 12.96 MB/s\\
-            \hline Clients, write-only, 12 memtier clients in total & 15.98\%       & 24.80 MB/s     & 0.83 MB/s\\
+            \hline Server, read-only, 8 memtier clients in total & 11.40\%         & 12.45 MB/s    & 0.44 MB/s\\
+            \hline Clients, read-only, 8 memtier clients in total & 21.34\%           & 0.87 MB/s     & 24.95 MB/s\\
+            \hline Server, write-only,  6 memtier clients in total & 12.50\%        & 0.42 MB/s     & 12.88 MB/s\\
+            \hline Clients, write-only, 6 memtier clients in total & 17.91\%       & 24.66 MB/s     & 0.83 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during Experiment 2.2}
@@ -276,8 +277,8 @@ Based on the experiments above, fill out the following table:
 	{Maximum throughput of different VMs.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
 		\hline                        & Read-only workload [req/s] & Write-only workload [req/s] & Configuration gives max. throughput \\ 
-		\hline One memcached server   &          2936.6          &      14791.0               &            read-only: 6 virtual clients \newline write-only: 120 virtual clients                         \\ 
-		\hline One load generating VM &        5853.8            &          5996.2           &         read-only: 6 virtual clients \newline write-only: 12 virtual clients                            \\ 
+		\hline One memcached server   &          2937          &      14791               &            read-only: 6 virtual clients \newline write-only: 120 virtual clients                         \\ 
+		\hline One load generating VM &        5847            &          5943           &         read-only: 8 virtual clients \newline write-only: 6 virtual clients                            \\ 
 		\hline 
 	\end{tabular}
 \end{center}
@@ -544,13 +545,13 @@ Provide a detailed comparison of the sharded and non-shareded modes. For which m
 
 \section{2K Analysis (90 pts)}
 
-For 3 client machines (with 64 total virtual clients per client VM) measure the throughput and response time of your system in a 2k experiment with repetitions. All GET operations have a single key. Investigate the following parameters:
+In this section, a 2k analysis for k=3 is being performed. With this, the impact of the number of memcached servers, the number of worker threads and the number of middlewares (as well as any combination of these) on throughput and response time is derived. The following parameter choices are being investigated:
 
 \begin{itemize}
 		
-	\item Memcached servers: 1 and 3
-	\item Middlewares: 1 and 2
-	\item Worker threads per MW: 8 and 32
+	\item Worker threads per MW $x_a \in \{8, 32\}$
+	\item Number of memcached servers $x_b \in \{1, 3\}$
+	\item Number of middlewares $x_c \in \{1,2\}$
 	      	      
 \end{itemize}
 
@@ -562,19 +563,166 @@ For each of the two workloads, what is the impact of these parameters on through
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                & 1 and 3                                     \\ 
 			\hline Number of client machines        & 3                                           \\ 
-			\hline Instances of memtier per machine & 1 (1 middleware) or 2 (2 middlewares) \\ 
-			\hline Threads per memtier instance     & 2 (1 middleware) or 1 (2 middlewares)   \\
-			\hline Virtual clients per thread       &  32                                     \\ 
-			\hline Workload                         & Write-only and Read-only\\
-			\hline Multi-Get behavior               & N/A                                         \\
-			\hline Multi-Get size                   & N/A                                         \\
+			\hline Instances of memtier per machine & 1 (1 middleware) or 2 (2 middlewares)       \\ 
+			\hline Threads per memtier instance     & 2 (1 middleware) or 1 (2 middlewares)       \\
+			\hline Virtual clients per thread       & 32                                          \\ 
+			\hline Workload                         & Write-only and Read-only                    \\
 			\hline Number of middlewares            & 1 and 2                                     \\
 			\hline Worker threads per middleware    & 8 and 32                                    \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                                   \\ 
+			\hline Repetitions                      & 3                                   \\ 
 			\hline 
 		\end{tabular}
 	} 
 \end{center}
+
+\subsection{Read-only Workload}
+
+\autoref{2k:read-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a read-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed.
+- clearly, server is bottleneck. dstat confirms that as well, 12.5MB/S avg upload per server
+- throughput and response time must be in close relationship. It is expected that factors that strongly influence throughput inversely influence response time in an equally strong way.
+- refer to section 2 / 3
+\todo{compactify, just mention the effect and allocation of Variance. See example from Valentin}
+
+\begin{table}
+    \begin{subtable}{1.0\linewidth}\centering
+        %{\begin{tabular}{|cccccccc|cc|}
+        {\begin{tabular}{lllllllllrr}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                    1 &     -1 &       -1 &     -1 &      1 &      1 &       1 &      -1 & 2936.411 &   0.904 \\
+                    1 &     -1 &       -1 &      1 &      1 &     -1 &      -1 &       1 & 2941.454 &   3.843 \\
+                    1 &     -1 &        1 &     -1 &     -1 &     -1 &       1 &       1 & 8702.579 &  26.966 \\
+                    1 &     -1 &        1 &      1 &     -1 &      1 &      -1 &      -1 & 8803.022 &   3.089 \\
+                    1 &      1 &       -1 &     -1 &     -1 &      1 &      -1 &       1 & 2940.514 &   2.471 \\
+                    1 &      1 &       -1 &      1 &     -1 &     -1 &       1 &      -1 & 2942.596 &   0.192 \\
+                    1 &      1 &        1 &     -1 &      1 &     -1 &      -1 &      -1 & 8804.268 &   2.778 \\
+                    1 &      1 &        1 &      1 &      1 &      1 &       1 &       1 & 8797.934 &  24.191 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+              5858.597 & 12.731 & 2918.354 & 12.654 & 11.419 & 10.873 & -13.717 & -12.977 & /8 & - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Throughput}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+            0.002\% & 99.989\% & 0.002\% & 0.002\%   &  0.001\%   &   0.002\%  &   0.002\%   & 0.000\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Throughput}}
+    \end{subtable}
+
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|cc|}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                  1 &     -1 &      -1 &     -1 &      1 &      1 &     1 &    -1 & 64.356 &   0.033 \\
+                  1 &     -1 &      -1 &      1 &      1 &     -1 &    -1 &     1 & 64.188 &   0.094 \\
+                  1 &     -1 &       1 &     -1 &     -1 &     -1 &     1 &     1 & 21.098 &   0.073 \\
+                  1 &     -1 &       1 &      1 &     -1 &      1 &    -1 &    -1 & 20.802 &   0.013 \\
+                  1 &      1 &      -1 &     -1 &     -1 &      1 &    -1 &     1 & 63.904 &   0.047 \\
+                  1 &      1 &      -1 &      1 &     -1 &     -1 &     1 &    -1 & 63.966 &   0.002 \\
+                  1 &      1 &       1 &     -1 &      1 &     -1 &    -1 &    -1 & 20.528 &   0.004 \\
+                  1 &      1 &       1 &      1 &      1 &      1 &     1 &     1 & 20.611 &   0.077 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+             42.431 & -0.179 & -21.672 & -0.040 & -0.011 & -0.013 & 0.076 & 0.019 &      /8 &       - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Response Time}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+       {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+              0.007\% &  99.991\% &  0.000\% &  0.000\% &  0.000\% & 0.001\% & 0.000\% &  0.001\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Response Time}}
+    \end{subtable}
+
+    \caption{2K Analysis, Read-only Workload}
+    \label{2k:read-only}
+\end{table}
+
+\subsection{Write-only Workload}
+\autoref{2k:write-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a write-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed. We observe that for write-only workload $x_a$, the number of worker threads has the most significant effect on the system followed by the number of middlewares $x_b$. The number of memcached servers, $x_b$, has the lowest effect for write-only workload. This makes sense because for write-only workload the servers do not need to send massive amounts of data but only receive and store. The bottleneck this time lies in the middleware, where we can even observe the maximum outgoing link capacity of 100MB/s being reached for the configuration with 1 middleware and 3 servers.
+\todo{mention other chapters, link to chaper 2/3/4}
+
+\begin{table}
+    \begin{subtable}{1.0\linewidth}\centering
+        %{\begin{tabular}{|cccccccc|cc|}
+        {\begin{tabular}{lllllllllrr}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                    1 &       -1 &       -1 &       -1 &        1 &      1 &       1 &    -1 &  6820.136 &  16.917 \\
+                    1 &       -1 &       -1 &        1 &        1 &     -1 &      -1 &     1 &  8557.913 &  38.062 \\
+                    1 &       -1 &        1 &       -1 &       -1 &     -1 &       1 &     1 &  5333.355 & 174.900 \\
+                    1 &       -1 &        1 &        1 &       -1 &      1 &      -1 &    -1 &  7240.880 &  35.038 \\
+                    1 &        1 &       -1 &       -1 &       -1 &      1 &      -1 &     1 & 10573.918 &  23.666 \\
+                    1 &        1 &       -1 &        1 &       -1 &     -1 &       1 &    -1 & 13065.804 &  12.610 \\
+                    1 &        1 &        1 &       -1 &        1 &     -1 &      -1 &    -1 &  8110.258 &  15.192 \\
+                    1 &        1 &        1 &        1 &        1 &      1 &       1 &     1 & 10789.416 &  59.709 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+             8811.460 & 1823.389 & -942.983 & 1102.043 & -242.029 & 44.627 & 190.718 & 2.190 &  /8 &       - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Throughput}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+            60.172\% &   16.093\% &   21.980\% &    1.060\% &  0.036\% &   0.658\% & 0.000\% &     0.000\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Throughput}}
+    \end{subtable}
+
+    \begin{subtable}{1.0\linewidth}\centering
+        {\begin{tabular}{|cccccccc|cc|}
+            \hline
+            $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
+            \hline
+                  1 &     -1 &     -1 &     -1 &      1 &      1 &     1 &    -1 & 27.219 &   0.061 \\
+                  1 &     -1 &     -1 &      1 &      1 &     -1 &    -1 &     1 & 21.378 &   0.045 \\
+                  1 &     -1 &      1 &     -1 &     -1 &     -1 &     1 &     1 & 35.060 &   1.193 \\
+                  1 &     -1 &      1 &      1 &     -1 &      1 &    -1 &    -1 & 25.521 &   0.140 \\
+                  1 &      1 &     -1 &     -1 &     -1 &      1 &    -1 &     1 & 16.914 &   0.032 \\
+                  1 &      1 &     -1 &      1 &     -1 &     -1 &     1 &    -1 & 13.575 &   0.050 \\
+                  1 &      1 &      1 &     -1 &      1 &     -1 &    -1 &    -1 & 21.570 &   0.091 \\
+                  1 &      1 &      1 &      1 &      1 &      1 &     1 &     1 & 16.604 &   0.092 \\
+            \hline
+            $q_0$ & $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & - & -\\
+             22.230 & -5.064 &  2.459 & -2.961 & -0.537 & -0.666 & 0.885 & 0.259 &  /8 &       - \\
+            \hline
+        \end{tabular}
+        \caption{Parameters and Effect Sizes, Response Time}}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+       {\begin{tabular}{|cccccccc|}
+            \hline
+            $q_a$ & $q_b$ & $q_c$ & $q_{ab}$ & $q_{bc}$ & $q_{ac}$ & $q_{abc}$ & Error \\
+            \hline
+            60.745\% & 14.316\% & 20.760\% &  0.684\% &  1.049\% & 1.853\% & 0.159\% &  0.435\% \\
+            \hline
+        \end{tabular}
+        \caption{Allocation of Variance, Response Time}}
+    \end{subtable}
+
+    \caption{2K Analysis, Write-only Workload}
+    \label{2k:write-only}
+\end{table}
+
 
 \section{Queuing Model (90 pts)}
 
