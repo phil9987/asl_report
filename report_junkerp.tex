@@ -459,7 +459,7 @@ If in your experiment the middleware is not the bottleneck, repeat the experimen
     \end{subfigure}
 
     \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, Write-Only workload}
-    \label{fig:3-2-times-readonly}
+    \label{fig:3-2-times-writeonly}
 \end{figure}
 
 \subsubsection{Explanation}
@@ -523,6 +523,33 @@ You need to plot throughput and response time measured on the middleware as a fu
 	} 
 \end{center}
 
+\begin{figure}
+    \includegraphics[width=1\linewidth]{plots/4b_throughputMiddleware.eps}
+    \caption{Throughput of full system, write only}
+    \label{fig:4-throughput}
+\end{figure}
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/4b_extendedLatencyMiddleware_8w.eps}
+        \caption{8 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/4b_extendedLatencyMiddleware_16w.eps}
+        \caption{16 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/4b_extendedLatencyMiddleware_32w.eps}
+        \caption{32 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/4b_extendedLatencyMiddleware_64w.eps}
+        \caption{64 worker threads}
+    \end{subfigure}
+
+    \caption{Response-, Queue- and Server-Service-Times of full system, Write-only workload}
+    \label{fig:4-times}
+\end{figure}
 \subsubsection{Explanation}
 
 Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
