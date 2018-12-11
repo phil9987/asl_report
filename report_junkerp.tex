@@ -391,7 +391,8 @@ The results in this section are based on the aggregated request logs from the mi
 
 % Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
 For read-only workload the server reaches its maximum outgoing network capacity of 12.5MB/s already almost with 6 memtier clients in total. As \autoref{dstat:3-1} shows, the measured send capacity of dstat shows for all worker thread configurations a maximum of around 12.2MB/s. With 12 memtier clients in total this value increases up to 12.4MB/s in average. Because this corresponds to an increase of only 40 requests per second the entering of saturation phase is chosen to be at 6 memtier clients in total. From this point on, the system is in saturation phase as can be seen on \autoref{fig:3-1-throughput} (a) for all configurations of worker threads. Hence, no under- and no over-saturation phase has been observed for read-only workload.
-The bottleneck is the single memcached server with its limited outgoing network capacity.
+A maximum throughput of 2939 requests per second is reached, which is equivalent to the maximum throughput for read-only workload measured in \autoref{sec2.1}.
+Like in \autoref{sec2.1} bottleneck is the single memcached server with its limited outgoing network capacity.
 \autoref{fig:3-1-times-readonly} shows how the average service time, the time the server needs to respond to a request from the middleware, increases with more worker threads. This comes from the fact that more connections to the single memcached server are established in parallel. The figure also shows nicely how the queuing time in the middleware remains almost zero up until the number of memtier clients exceeds the number of worker threads. Up until the point where there are at least as many worker threads as clients connecting, because we are in a closed system and clients send requests only one after another, each request is taken from the queue immediately.
 
 
@@ -714,8 +715,7 @@ For each of the two workloads, what is the impact of these parameters on through
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
-        %{\begin{tabular}{|cccccccc|cc|}
-        {\begin{tabular}{lllllllllrr}
+        {\begin{tabular}{|cccccccc|cc|}
             \hline
             $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
             \hline
@@ -789,8 +789,7 @@ As we have seen in previous chapters \todo{be more specific here}, the decrease 
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
-        %{\begin{tabular}{|cccccccc|cc|}
-        {\begin{tabular}{lllllllllrr}
+        {\begin{tabular}{|cccccccc|cc|}
             \hline
             $I$ & $x_a$ & $x_b$ & $x_c$ & $x_{ab}$ & $x_{bc}$ & $x_{ac}$ & $x_{abc}$ & $y_{mean}$ & $y_{stddev}$\\
             \hline
