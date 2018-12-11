@@ -390,14 +390,20 @@ The results in this section are based on the aggregated request logs from the mi
 \subsubsection{Explanation}
 
 % Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
-For read-only workload the server reaches its maximum outgoing network capacity of 12.5MB/s already almost with 6 memtier clients in total. As \autoref{dstat:3-1} shows, the measured send capacity of dstat shows for all worker thread configurations a maximum of around 12.2MB/s. With 12 memtier clients in total this value increases up to 12.4MB/s in average. Because this corresponds to an increase of only 40 requests per second the entering of saturation phase is chosen to be at 6 memtier clients in total. From this point on, the system is in saturation phase as can be seen on \autoref{fig:3-1-throughput} (a). Hence, no under- and no over-saturation phase has been observed for read-only workload.
+For read-only workload the server reaches its maximum outgoing network capacity of 12.5MB/s already almost with 6 memtier clients in total. As \autoref{dstat:3-1} shows, the measured send capacity of dstat shows for all worker thread configurations a maximum of around 12.2MB/s. With 12 memtier clients in total this value increases up to 12.4MB/s in average. Because this corresponds to an increase of only 40 requests per second the entering of saturation phase is chosen to be at 6 memtier clients in total. From this point on, the system is in saturation phase as can be seen on \autoref{fig:3-1-throughput} (a) for all configurations of worker threads. Hence, no under- and no over-saturation phase has been observed for read-only workload.
 The bottleneck is the single memcached server with its limited outgoing network capacity.
 \autoref{fig:3-1-times-readonly} shows how the average service time, the time the server needs to respond to a request from the middleware, increases with more worker threads. This comes from the fact that more connections to the single memcached server are established in parallel. The figure also shows nicely how the queuing time in the middleware remains almost zero up until the number of memtier clients exceeds the number of worker threads. Up until the point where there are at least as many worker threads as clients connecting, because we are in a closed system and clients send requests only one after another, each request is taken from the queue immediately.
 
 
 For write-only workload the situation is different. This time the server is not the bottleneck up until 64 worker threads. \autoref{fig:3-1-throughput} (b) shows nicely how the throughput increases with more worker threads. This leads to the conclusion that the middleware is the bottleneck, because if the number of worker threads in the middleware is increased, the throughput increases too. The dstat logs of all machines confirm this hypothesis and show that the network traffic stays within the maximum capacities listed in \autoref{link-caps} and the CPU usage of all machines stays below 70\%.
 Only if the number of worker threads is further increased to 128, the CPU usage of the server rises up until 90\% which is an indicator that the server is now the bottleneck and more worker threads will not lead to a higher throughput from this point on.
-The system is under-saturated
+For 8 and 16 worker threads the system is under-saturated until 18 clients, as the average response time remains constant up until this point as shown in \autoref{fig:3-1-times-writeonly} (a) and (b) and then starts to increase linearly.
+For 32 worker threads the system is under-saturated unitl 36 clients, again, the average response time remains constant up until this point and then starts to increase linearly as shown in \autoref{fig:3-1-times-writeonly} (c).
+For 64 worker threads the system changes from under-saturated to saturated at 72 clients, as the average response time remains almost constant up until this point as shown in \autoref{fig:3-1-times-writeonly} (d) and then increases linearly.
+From this observation we conclude that the middleware is under-saturated until the number of clients is at least as large as the number of worker threads. From then on the queue in the middleware will not be empty anymore and saturation phase is reached.
+No over-saturation has been observerd during this experiment.
+
+
 
 \subsection{Two Middlewares} \label{sec3.2}
 
