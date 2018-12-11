@@ -59,7 +59,7 @@ On the other hand it has a configurable amount of worker threads, the consumers,
 They are connected via a Java BlockingQueue. For this implementation I chose the LinkedBlockingQueue implementation because it provides thread safety, separate read and write locks and no maximum capacity.
 All threads are created and started by the main thread.
 In addition, the main thread also creates the request queue and registers a shutdown hook, which assures that all logfiles are written before the system terminates on a SIGTERM signal.
-% TODO: create system overview illustration and refer to it
+\todo{create system overview illustration and refer to it}
 
 The networker thread handles the incoming connections from the clients and performs a minimal request parsing to determine whether a request is complete and therefore ready to be processed.
 For this, the networker uses Java's non-blocking I/O (NIO) mechanisms to set up an event polling loop over all connected sockets in its run method.
@@ -136,14 +136,14 @@ This is assumed to be acceptable for the setup of this project, because it match
 % Include illustrations that show how requests of different types are handled (e.g., components involved in processing the request and method calls). 
 % Please include all details necessary to understand artifacts and effects in your experiments that arise from your implementation choices.
 
-\section{Baseline without Middleware (75 pts)}
+\section{Baseline without Middleware (75 pts)} \label{section2}
 
-\subsection{One Server}
+\subsection{One Server} \label{sec2.1}
 
-In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in the table below.
+In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in \autoref{exp2-1} below.
 
 \begin{center}
-	\scriptsize{
+    \begin{table}
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                        & 1                                 \\ 
 			\hline Number of client machines                & 3                                 \\ 
@@ -155,7 +155,8 @@ In this section, the maximum capacity of a single memcached server is examined. 
 			\hline Repetitions                              & 3                                 \\ 
 			\hline 
 		\end{tabular}
-	} 
+		\caption{Experiment configuration for \autoref{sec2.1}} \label{exp2-1}
+	\end{table}
 \end{center}
 
 \begin{figure}
@@ -197,7 +198,7 @@ The over-saturated phase has not been reached for both read and write-only durin
 
 \begin{center}
     \begin{table}
-    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
             \hline Server, read-only, 6 memtier clients in total & 11.0\%         & 12.41 MB/s    & 0.44 MB/s\\
             \hline Clients, read-only, 6 memtier clients in total & 5.44\%           & 0.16 MB/s     & 4.24 MB/s\\
@@ -210,11 +211,11 @@ The over-saturated phase has not been reached for both read and write-only durin
 	\end{table}
 \end{center}
 
-\subsection{Two Servers}
-In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of both memtier threads. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in the table below.
+\subsection{Two Servers} \label{sec2.2}
+In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of both memtier threads. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in table \autoref{exp2-2} below.
 
 \begin{center}
-	\scriptsize{
+    \begin{table}
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                        & 2                        \\ 
 			\hline Number of client machines                & 1                        \\ 
@@ -227,7 +228,8 @@ In this section, the maximum load generation capacity of a single memtier instan
 			3                        \\ 
 			\hline 
 		\end{tabular}
-	} 
+		\caption{Experiment configuration for \autoref{sec2.2}} \label{exp2-2}
+	\end{table}
 \end{center}
 
 \begin{figure}
@@ -254,7 +256,7 @@ For the write-only workload the bottleneck has been identified at the outgoing n
 
 \begin{center}
     \begin{table}
-    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
             \hline Server, read-only, 8 memtier clients in total & 11.40\%         & 12.45 MB/s    & 0.44 MB/s\\
             \hline Clients, read-only, 8 memtier clients in total & 21.34\%           & 0.87 MB/s     & 24.95 MB/s\\
@@ -275,7 +277,7 @@ Based on the experiments above, fill out the following table:
 
 \begin{center}
 	{Maximum throughput of different VMs.}
-	\begin{tabular}{|l|p{2cm}|p{2cm}|p{4cm}|}
+	\begin{tabular}{|l|p{2cm}|p{2cm}|p{7cm}|}
 		\hline                        & Read-only workload [req/s] & Write-only workload [req/s] & Configuration gives max. throughput \\ 
 		\hline One memcached server   &          2937          &      14791               &            read-only: 6 virtual clients \newline write-only: 120 virtual clients                         \\ 
 		\hline One load generating VM &        5847            &          5943           &         read-only: 8 virtual clients \newline write-only: 6 virtual clients                            \\ 
@@ -284,35 +286,33 @@ Based on the experiments above, fill out the following table:
 \end{center}
 
 
-Write at least two paragraphs about how both results relate. Describe what is the bottleneck of this setup is. If the maximum throughput for both experiments is the same, explain why. If it is not the case, explain why not. Write down key take-away messages about the behaviour of the memtier clients and the memcached servers.
+\todo{Write at least two paragraphs about how both results relate. Describe what is the bottleneck of this setup is. If the maximum throughput for both experiments is the same, explain why. If it is not the case, explain why not. Write down key take-away messages about the behaviour of the memtier clients and the memcached servers.}
 
 \section{Baseline with Middleware (90 pts)}
 
-In this set of experiments, you will have to use 1 load generator VM and 1 memcached server, measuring how the throughput of the system changes when increasing the number of clients. Scaling virtual clients inside memtier has to be done as explained in the previous sections. Plot both throughput and response time as measured on the middleware.
-
 \subsection{One Middleware}
+After establishing baselines for memtier clients and memcached servers in \autoref{section2}, this section analyzes how adding my middleware to the system affects the preformance. Due to the additional network hops from client to middleware and from middleware to server it is unavoidable that some additional latency is introduced. The middleware is designed to hide this latency with parallelism using its worker threads and, given a sufficient amount of parallelism, avoid becoming the system's bottleneck.
 
-Connect one load generator machine (one instance of memtier with CT=2) to a single middleware and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time measured in the middleware.
+The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occured during the test and all client requests were processed and answered. As before, the number of clients is equal to the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-1} below.
 
-Repeat this experiment for different number of worker threads inside the middleware: 8, 16, 32, 64.
 
 \begin{center}
-	\scriptsize{
+	\begin{table}
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                & 1                        \\ 
 			\hline Number of client machines        & 3                        \\ 
 			\hline Instances of memtier per machine & 1                        \\ 
 			\hline Threads per memtier instance     & 2                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
+			\hline Virtual clients per thread (write-only)  & [1,3,6,12,20,32] \\ 
+			\hline Virtual clients per thread (read-only)   & [1,2,3,4,5,6,32] \\ 
 			\hline Workload                         & Write-only and Read-only \\
-			\hline Multi-Get behavior               & N/A                      \\
-			\hline Multi-Get size                   & N/A                      \\
 			\hline Number of middlewares            & 1                        \\
-			\hline Worker threads per middleware    & [8..64]                  \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
+			\hline Worker threads per middleware    & [8, 16, 32, 64]          \\
+			\hline Repetitions                      & 3                        \\ 
 			\hline 
 		\end{tabular}
-	} 
+		\caption{Experiment configuration for Section 3.1} \label{exp3-1}
+	\end{table}
 \end{center}
 
 \begin{figure}
@@ -372,11 +372,34 @@ Repeat this experiment for different number of worker threads inside the middlew
     \label{fig:3-1-times-writeonly}
 \end{figure}
 
+\begin{center}
+    \begin{table}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
+            \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
+            \hline Server, read-only, 8WT, 6 memtier clients in total & 10.75\%         & 12.20 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 16WT, 6 memtier clients in total & 11.35\%         & 12.17 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 32WT, 6 memtier clients in total & 13.62\%         & 12.27 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 64WT, 6 memtier clients in total & 15.01\%         & 12.24 MB/s    & 0.43 MB/s\\
+            \hline
+    	\end{tabular}
+	\caption{Machine Stats during Experiment 3.1}
+    \label{dstat:3-1}
+	\end{table}
+\end{center}
+
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+% Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+For read-only workload the server reaches its maximum outgoing network capacity of 12.5MB/s already almost with 6 memtier clients in total. As \autoref{dstat:3-1} shows, the measured send capacity of dstat shows for all worker thread configurations a maximum of around 12.2MB/s. With 12 memtier clients in total this value increases up to 12.4MB/s in average. Because this corresponds to an increase of only 40 requests per second the entering of saturation phase is chosen to be at 6 memtier clients in total. From this point on, the system is in saturation phase as can be seen on \autoref{fig:3-1-throughput} (a). Hence, no under- and no over-saturation phase has been observed for read-only workload.
+The bottleneck is the single memcached server with its limited outgoing network capacity.
+\autoref{fig:3-1-times-readonly} shows how the average service time, the time the server needs to respond to a request from the middleware, increases with more worker threads. This comes from the fact that more connections to the single memcached server are established in parallel. The figure also shows nicely how the queuing time in the middleware remains almost zero up until the number of memtier clients exceeds the number of worker threads. Up until the point where there are at least as many worker threads as clients connecting, because we are in a closed system and clients send requests only one after another, each request is taken from the queue immediately.
 
-\subsection{Two Middlewares}
+
+For write-only workload the situation is different. This time the server is not the bottleneck up until 64 worker threads. \autoref{fig:3-1-throughput} (b) shows nicely how the throughput increases with more worker threads. This leads to the conclusion that the middleware is the bottleneck, because if the number of worker threads in the middleware is increased, the throughput increases too. The dstat logs of all machines confirm this hypothesis and show that the network traffic stays within the maximum capacities listed in \autoref{link-caps} and the CPU usage of all machines stays below 70\%.
+Only if the number of worker threads is further increased to 128, the CPU usage of the server rises up until 90\% which is an indicator that the server is now the bottleneck and more worker threads will not lead to a higher throughput from this point on.
+The system is under-saturated
+
+\subsection{Two Middlewares} \label{sec3.2}
 
 Connect one load generator machine (two instances of memtier with CT=1) to two middlewares and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time as measured in the middleware.
 
@@ -385,22 +408,22 @@ Repeat this experiment for different number of worker threads inside the middlew
 If in your experiment the middleware is not the bottleneck, repeat the experiment that reaches the highest throughput but using two load generator VMs (each with 2x memtier CT=1) instead of one. Otherwise, explain how you know that the middlewares are the limiting factor in terms of throughput.
 
 \begin{center}
-	\scriptsize{
+    \begin{table}
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                & 1                        \\ 
 			\hline Number of client machines        & 3                        \\ 
 			\hline Instances of memtier per machine & 2                        \\ 
 			\hline Threads per memtier instance     & 1                        \\
-			\hline Virtual clients per thread       & [1..32]                  \\ 
+			\hline Virtual clients per thread (write-only)  & [1,3,6,12,20,32] \\ 
+			\hline Virtual clients per thread (read-only)   & [1,2,3,4,5,6,32] \\ 
 			\hline Workload                         & Write-only and Read-only \\
-			\hline Multi-Get behavior               & N/A                      \\
-			\hline Multi-Get size                   & N/A                      \\
 			\hline Number of middlewares            & 2                        \\
 			\hline Worker threads per middleware    & [8..64]                  \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)                \\ 
+			\hline Repetitions                      & 3                        \\ 
 			\hline 
 		\end{tabular}
-	} 
+		\caption{Experiment configuration for \autoref{sec3.2}} \label{exp3-2}
+	\end{table}
 \end{center}
 
 \begin{figure}
@@ -499,28 +522,27 @@ Based on the data provided in these tables, write at least two paragraphs summar
 
 \section{Throughput for Writes (90 pts)}
 
-\subsection{Full System}
+\subsection{Full System} \label{sec4}
 
 Connect three load generating VMs to two middlewares and three memchached servers. Run a write-only experiment. 
 You need to plot throughput and response time measured on the middleware as a function of number of clients. The measurements have to be performed for 8, 16, 32 and 64 worker threads inside each middleware.
 
 \begin{center}
-	\scriptsize{
+    \begin{table}
 		\begin{tabular}{|l|c|}
-			\hline Number of servers                & 3          \\ 
-			\hline Number of client machines        & 3          \\ 
-			\hline Instances of memtier per machine & 2          \\ 
-			\hline Threads per memtier instance     & 1          \\
-			\hline Virtual clients per thread       & [1..32]    \\ 
-			\hline Workload                         & Write-only \\
-			\hline Multi-Get behavior               & N/A        \\
-			\hline Multi-Get size                   & N/A        \\
-			\hline Number of middlewares            & 2          \\
-			\hline Worker threads per middleware    & [8..64]    \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)  \\ 
+			\hline Number of servers                & 3                         \\ 
+			\hline Number of client machines        & 3                         \\ 
+			\hline Instances of memtier per machine & 2                         \\ 
+			\hline Threads per memtier instance     & 1                         \\
+			\hline Virtual clients per thread       & [1, 3, 6, 12, 20, 32]     \\ 
+			\hline Workload                         & Write-only                \\
+			\hline Number of middlewares            & 2                         \\
+			\hline Worker threads per middleware    & [8, 16, 32, 64]           \\
+			\hline Repetitions                      & 3                         \\ 
 			\hline 
 		\end{tabular}
-	} 
+		\caption{Experiment configuration for \autoref{sec4}} \label{exp4}
+	\end{table}
 \end{center}
 
 \begin{figure}
@@ -580,12 +602,12 @@ For this set of experiments you will use three load generating machines, two mid
 
 For multi-GET workloads, memtier will generate a mixture of SETs, GETs, and multi-GETs. Memtier only allows to specify the maximum number of keys in a multi-GET request. Therefore, be aware that requests can also contain fewer keys than the provided value. It is recommended to record the average size of the multi-GETs. You will have to measure response time on the client as a function of multi-get size, with and without sharding on the middlewares.
 
-\subsection{Sharded Case}
+\subsection{Sharded Case} \label{sec5.1}
 
 Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
 
 \begin{center}
-	\scriptsize{
+    \begin{table}
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                & 3                       \\ 
 			\hline Number of client machines        & 3                       \\ 
@@ -594,25 +616,26 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
 			\hline Virtual clients per thread       & 2     		            \\ 
 			\hline Workload                         & ratio=1:$<$Multi-Get size$>$             \\
 			\hline Multi-Get behavior               & Sharded                 \\
-			\hline Multi-Get size                   & [1..9]                  \\
+			\hline Multi-Get size                   & [1, 3, 6, 9]            \\
 			\hline Number of middlewares            & 2                       \\
-			\hline Worker threads per middleware    & max. throughput config. \\
-			\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
+			\hline Worker threads per middleware    & 64                      \\
+			\hline Repetitions                      & 3                       \\ 
 			\hline 
 		\end{tabular}
-	} 
+		\caption{Experiment configuration for \autoref{sec5.1}} \label{exp5-1}
+	\end{table}
 \end{center}
 
 \subsubsection{Explanation}
 
 Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
 
-\subsection{Non-sharded Case}
+\subsection{Non-sharded Case} \label{sec5.2}
 
 Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding disabled. Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
 
 \begin{center}
-	\scriptsize{
+    \begin{table}
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                & 3                       \\ 
 			\hline Number of client machines        & 3                       \\ 
@@ -627,7 +650,8 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding dis
 			\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
 			\hline 
 		\end{tabular}
-	} 
+		\caption{Experiment configuration for \autoref{sec5.2}} \label{exp5-2}
+	\end{table}
 \end{center}
 
 \subsubsection{Explanation}
@@ -751,7 +775,10 @@ For each of the two workloads, what is the impact of these parameters on through
 \end{table}
 
 \subsection{Write-only Workload}
-\autoref{2k:write-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a write-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed. We observe that for write-only workload $x_a$, the number of worker threads has the most significant effect on the system followed by the number of middlewares $x_b$. The number of memcached servers, $x_b$, has the lowest effect for write-only workload. This makes sense because for write-only workload the servers do not need to send massive amounts of data but only receive and store. The bottleneck this time lies in the middleware, where we can even observe the maximum outgoing link capacity of 100MB/s being reached for the configuration with 1 middleware and 3 servers.
+\autoref{2k:write-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a write-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed. We observe that for write-only workload $x_a$, the number of worker threads has the most significant effect on the system followed by the number of middlewares $x_c$. This aligns with the observations in sections 3 and 4 for write-only workload where we observed that the middleware is the bottleneck due to too few worker threads. The reason for $x_a$ having a significantly higher allocation of variance in comparison to $x_c$ is, that the number of worker threads is increased by a factor of 4 with $x_a$ while it is only doubled with $x_c$.
+The number of memcached servers, $x_b$, has the lowest effect for write-only workload and the effect on the throughput is negative, meaning increasing the amount of servers from 1 to 3 actually leads to a decrease of throughput and an increase of latency. 
+As we have seen in previous chapters \todo{be more specific here}, the decrease of throughput for write-only workload can be explained with reference to the implementation of the middleware. The middleware sends SET requests to each memcached server and responses are received from each server one by one. Besides the sending and receiving, the main difference in response time comes from the dependence on the slowest server response time. \todo{name concrete values here}.
+%This makes sense because for write-only workload the servers do not need to send massive amounts of data but only receive and store. The bottleneck this time lies in the middleware, where we can even observe the maximum outgoing link capacity of 100MB/s being reached for the configuration with 1 middleware and 3 servers.
 \todo{mention other chapters, link to chaper 2/3/4}
 
 \begin{table}
