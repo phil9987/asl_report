@@ -155,7 +155,7 @@ In this section, the maximum capacity of a single memcached server is examined. 
 			\hline Repetitions                              & 3                                 \\ 
 			\hline 
 		\end{tabular}
-		\caption{Experiment configuration for \autoref{sec2.1}} \label{exp2-1}
+		\caption{Experiment configurations for \autoref{sec2.1}} \label{exp2-1}
 	\end{table}
 \end{center}
 
@@ -206,7 +206,7 @@ The over-saturated phase has not been reached for both read and write-only durin
             \hline Clients, write-only, 120 memtier clients in total & 18.09\%       & 20.97 MB/s     & 0.69 MB/s\\
             \hline
     	\end{tabular}
-	\caption{Machine Stats during Experiment 2.1}
+	\caption{Machine Stats during Experiments for \autoref{sec2.1}}
     \label{dstat:2-1}
 	\end{table}
 \end{center}
@@ -228,7 +228,7 @@ In this section, the maximum load generation capacity of a single memtier instan
 			3                        \\ 
 			\hline 
 		\end{tabular}
-		\caption{Experiment configuration for \autoref{sec2.2}} \label{exp2-2}
+		\caption{Experiment configurations for \autoref{sec2.2}} \label{exp2-2}
 	\end{table}
 \end{center}
 
@@ -264,7 +264,7 @@ For the write-only workload the bottleneck has been identified at the outgoing n
             \hline Clients, write-only, 6 memtier clients in total & 17.91\%       & 24.66 MB/s     & 0.83 MB/s\\
             \hline
     	\end{tabular}
-	\caption{Machine Stats during Experiment 2.2}
+	\caption{Machine Stats during Experiments for \autoref{sec2.2}}
     \label{dstat:2-2}
 	\end{table}
 \end{center}
@@ -290,10 +290,10 @@ Based on the experiments above, fill out the following table:
 
 \section{Baseline with Middleware (90 pts)}
 
-\subsection{One Middleware}
+\subsection{One Middleware} \label{sec3.1}
 After establishing baselines for memtier clients and memcached servers in \autoref{section2}, this section analyzes how adding my middleware to the system affects the preformance. Due to the additional network hops from client to middleware and from middleware to server it is unavoidable that some additional latency is introduced. The middleware is designed to hide this latency with parallelism using its worker threads and, given a sufficient amount of parallelism, avoid becoming the system's bottleneck.
 
-The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occured during the test and all client requests were processed and answered. As before, the number of clients is equal to the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-1} below.
+The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients is equal to the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-1} below.
 
 
 \begin{center}
@@ -311,7 +311,7 @@ The results in this section are based on the aggregated request logs from the mi
 			\hline Repetitions                      & 3                        \\ 
 			\hline 
 		\end{tabular}
-		\caption{Experiment configuration for Section 3.1} \label{exp3-1}
+		\caption{Experiment configurations for Section 3.1} \label{exp3-1}
 	\end{table}
 \end{center}
 
@@ -324,7 +324,7 @@ The results in this section are based on the aggregated request logs from the mi
         \includegraphics[width=1\linewidth]{plots/3_1b_throughputMiddleware.eps}
         \caption{Throughput, write only}
     \end{subfigure}
-    \caption{Throughput of baseline with one Middleware, one Server}
+    \caption{Throughput of baseline with one Middleware, one Server, \autoref{sec3.1}}
     \label{fig:3-1-throughput}
 \end{figure}
 
@@ -346,7 +346,7 @@ The results in this section are based on the aggregated request logs from the mi
         \caption{64 worker threads}
     \end{subfigure}
 
-    \caption{Response-, Queue- and Server-Service-Times of baseline with one Middleware, one Server, Read-only workload}
+    \caption{Response-, Queue- and Server-Service-Times of baseline with one Middleware, one Server, \autoref{sec3.1}, Read-only workload}
     \label{fig:3-1-times-readonly}
 \end{figure}
 
@@ -368,7 +368,7 @@ The results in this section are based on the aggregated request logs from the mi
         \caption{64 worker threads}
     \end{subfigure}
 
-    \caption{Response-, Queue- and Server-Service-Times of baseline with one Middleware, one Server, Write-only workload}
+    \caption{Response-, Queue- and Server-Service-Times of baseline with one Middleware, one Server, \autoref{sec3.1}, Write-only workload}
     \label{fig:3-1-times-writeonly}
 \end{figure}
 
@@ -382,8 +382,25 @@ The results in this section are based on the aggregated request logs from the mi
             \hline Server, read-only, 64WT, 6 memtier clients in total & 15.01\%         & 12.24 MB/s    & 0.43 MB/s\\
             \hline
     	\end{tabular}
-	\caption{Machine Stats during Experiment 3.1}
+	\caption{Machine Stats during read-only Experiments for \autoref{sec3.1}}
     \label{dstat:3-1}
+	\end{table}
+\end{center}
+
+
+\begin{center}
+    \begin{table}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
+            \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
+            \hline Server, write-only, 8WT, 192 memtier clients in total & 21.96\%         & 0.86 MB/s    & 26.51 MB/s\\
+            \hline Server, write-only, 16WT, 192 memtier clients in total & 45.52\%         & 1.17 MB/s    & 36.14 MB/s\\
+            \hline Server, write-only, 32WT, 192 memtier clients in total & 65.48\%         & 1.39 MB/s    & 42.81 MB/s\\
+            \hline Server, write-only, 64WT, 192 memtier clients in total & 80.70\%         & 1.71 MB/s    & 52.65 MB/s\\
+            \hline Server, write-only, 128WT, 192 memtier clients in total & 90.87\%         & 1.94 MB/s    & 59.75 MB/s\\
+            \hline
+    	\end{tabular}
+	\caption{Machine Stats during write-onlyExperiments for \autoref{sec3.1}}
+    \label{dstat:3-1wo}
 	\end{table}
 \end{center}
 
@@ -397,22 +414,21 @@ Like in \autoref{sec2.1} bottleneck is the single memcached server with its limi
 
 
 For write-only workload the situation is different. This time the server is not the bottleneck up until 64 worker threads. \autoref{fig:3-1-throughput} (b) shows nicely how the throughput increases with more worker threads. This leads to the conclusion that the middleware is the bottleneck, because if the number of worker threads in the middleware is increased, the throughput increases too. The dstat logs of all machines confirm this hypothesis and show that the network traffic stays within the maximum capacities listed in \autoref{link-caps} and the CPU usage of all machines stays below 70\%.
-Only if the number of worker threads is further increased to 128, the CPU usage of the server rises up until 90\% which is an indicator that the server is now the bottleneck and more worker threads will not lead to a higher throughput from this point on.
+\autoref{dstat:3-1wo} shows tif the number of worker threads is further increased to 128, the CPU usage of the server rises up until 90\% which is an indicator that the server is now the bottleneck and more worker threads will not lead to a higher throughput from this point on.
 For 8 and 16 worker threads the system is under-saturated until 18 clients, as the average response time remains constant up until this point as shown in \autoref{fig:3-1-times-writeonly} (a) and (b) and then starts to increase linearly.
 For 32 worker threads the system is under-saturated unitl 36 clients, again, the average response time remains constant up until this point and then starts to increase linearly as shown in \autoref{fig:3-1-times-writeonly} (c).
 For 64 worker threads the system changes from under-saturated to saturated at 72 clients, as the average response time remains almost constant up until this point as shown in \autoref{fig:3-1-times-writeonly} (d) and then increases linearly.
-From this observation we conclude that the middleware is under-saturated until the number of clients is at least as large as the number of worker threads. From then on the queue in the middleware will not be empty anymore and saturation phase is reached.
-No over-saturation has been observerd during this experiment.
+From this observation we conclude that the middleware is under-saturated until the number of clients is at least as large as the number of worker threads. From then on the queue in the middleware is not empty anymore and saturation phase is reached.
+No over-saturation has been observed during this experiment.
+\todo{explain why response time is much lower compared to read-only workload.}
 
 
 
 \subsection{Two Middlewares} \label{sec3.2}
 
-Connect one load generator machine (two instances of memtier with CT=1) to two middlewares and use 1 memcached server. Run a read-only and a write-only workload with increasing number of clients (between 2 and 64) and measure response time \emph{both at the client and at the middleware}, and plot the throughput and response time as measured in the middleware.
+In this section the preformance of two middlewares is investigated, splitting the load into two, connecting each client machine to both middlewares.
 
-Repeat this experiment for different number of worker threads inside the middleware: 8, 16, 32, 64.
-
-If in your experiment the middleware is not the bottleneck, repeat the experiment that reaches the highest throughput but using two load generator VMs (each with 2x memtier CT=1) instead of one. Otherwise, explain how you know that the middlewares are the limiting factor in terms of throughput.
+The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients is equal to the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-2} below.
 
 \begin{center}
     \begin{table}
@@ -429,7 +445,7 @@ If in your experiment the middleware is not the bottleneck, repeat the experimen
 			\hline Repetitions                      & 3                        \\ 
 			\hline 
 		\end{tabular}
-		\caption{Experiment configuration for \autoref{sec3.2}} \label{exp3-2}
+		\caption{Experiment configurations for \autoref{sec3.2}} \label{exp3-2}
 	\end{table}
 \end{center}
 
@@ -443,7 +459,7 @@ If in your experiment the middleware is not the bottleneck, repeat the experimen
         \caption{Throughput, write only}
     \end{subfigure}
 
-    \caption{Throughput of baseline with two Middlewares, one Server}
+    \caption{Throughput of baseline with two Middlewares, one Server, \autoref{sec3.2}}
     \label{fig:3-2-throughput}
 \end{figure}
 
@@ -466,7 +482,7 @@ If in your experiment the middleware is not the bottleneck, repeat the experimen
         \caption{64 worker threads}
     \end{subfigure}
 
-    \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, Read-Only workload}
+    \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, \autoref{sec3.2}, Read-Only workload}
     \label{fig:3-2-times-readonly}
 \end{figure}
 
@@ -488,27 +504,66 @@ If in your experiment the middleware is not the bottleneck, repeat the experimen
         \caption{64 worker threads}
     \end{subfigure}
 
-    \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, Write-Only workload}
+    \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, \autoref{sec3.2}, Write-Only workload}
     \label{fig:3-2-times-writeonly}
 \end{figure}
 
+\begin{center}
+    \begin{table}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
+            \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
+            \hline Server, read-only, 8WT, 6 memtier clients in total & 11.73\%         & 12.29 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 16WT, 6 memtier clients in total & 14.25 \%         & 12.29MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 32WT, 6 memtier clients in total & 14.97\%         & 12.25 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 64WT, 6 memtier clients in total & 16.14\%         & 12.26 MB/s    & 0.43 MB/s\\
+            \hline
+    	\end{tabular}
+	\caption{Machine Stats during read-only Experiments for \autoref{sec3.2}, two middlewares}
+    \label{dstat:3-2}
+	\end{table}
+\end{center}
+
+\begin{center}
+    \begin{table}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
+            \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
+            \hline Server, write-only, 8WT, 192 memtier clients in total & 51.19\%         & 1.18 MB/s    & 36.37 MB/s\\
+            \hline Server, write-only, 16WT, 192 memtier clients in total & 65.11\%         & 1.45 MB/s    & 44.75 MB/s\\
+            \hline Server, write-only, 32WT, 192 memtier clients in total & 81.20\%         & 1.77 MB/s    & 54.75 MB/s\\
+            \hline Server, write-only, 64WT, 192 memtier clients in total & 93.17\%         & 2.05 MB/s    & 63.48 MB/s\\
+            \hline Server, write-only, 128WT, 192 memtier clients in total & 95.18\%         & 2.02 MB/s    & 62.38 MB/s\\
+            \hline
+    	\end{tabular}
+	\caption{Machine Stats during write-only Experiments for \autoref{sec3.2}, two middlewares}
+    \label{dstat:3-2wo}
+	\end{table}
+\end{center}
+
+
 \subsubsection{Explanation}
+For read-only workload we observe the exact same throughput as in \autoref{sec3.1} for read-only workload. This is no surprise as also with two middlewares the server network upload reaches its maximum upload capacity already with 6 memtier clients. \autoref{dstat:3-2} shows several machine stats measured with dstat during the experiments for several worker thread configurations.
+The tresponse, queue and service times plotted in \autoref{fig:3-2-times-readonly} look very similar as in \autoref{sec3.1} but is shifted by one graph because 8 worker threads is now equal to the 16 worker threads graph of \autoref{sec3.1}, the 16 worker threads graph is equal to the 32 worker threads graph and so on. This is the case because doubling the amount of middlewares is equal to doubling the amount of worker threads (despite some overhead of the second middleware instance).
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+For write-only workload we also observe a similar throughput as in \autoref{sec3.1}, with the maximum throughput of 8 worker threads being equal to 16 worker threads in \autoref{sec3.1}. \autoref{fig:3-2-throughput} shows again that the two middlewares are the bottleneck up until 32 worker threads because an increase of worker threads leads to an increase of throughput. For 64 worker threads \autoref{dstat:3-2wo} shows a CPU usage of over 93\% on the server which implies that the bottleneck now lies at the server and that a further increase of worker thread would not lead to an increase in throughput.
+Furthermore, \autoref{fig:3-2-throughput} shows that doubling the number of middleware is almost equal to doubling the amount of workerthreads.
+\todo{explain why throughput is slightly higher for 2x middleware compared to 2x workerthreads?!}
 
+
+For write-only workload
 \subsection{Summary}
 
-Based on the experiments above, fill out the following table. For both of them use the numbers from a single experiment to fill out all lines. Miss rate represents the percentage of GET requests that return no data. Time in the queue refers to the time spent in the queue between the net-thread and the worker threads.
+%Based on the experiments above, fill out the following table. For both of them use the numbers from a single experiment to fill out all lines. Miss rate represents the percentage of GET requests that return no data. Time in the queue refers to the time spent in the queue between the net-thread and the worker threads.
+\todo{write summary, comment throughput/response time table below}
 
 
 \begin{center}
 	{Maximum throughput for one middleware.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline                                & Throughput & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware  &            &               &                       &           \\ 
-		\hline Reads: Measured on clients     &            &               & n/a                   &           \\ 
-		\hline Writes: Measured on middleware &            &               &                       & n/a       \\ 
-		\hline Writes: Measured on clients    &            &               & n/a                   & n/a       \\ 
+		\hline                                                   & Throughput     & Response time & Average time in queue & Miss rate \\ 
+		\hline Reads: Measured on middleware (8WT, 12 clients)   &     2939       &    3.15ms     & 0.79ms                & 0.0       \\ 
+		\hline Reads: Measured on clients (8WT, 12 clients)      &     2939       &    4.1ms      & n/a                   & 0.0       \\ 
+		\hline Writes: Measured on middleware (64WT, 120 clients)&     12030      &    8.27ms     & 3.24ms                & n/a       \\ 
+		\hline Writes: Measured on clients (64WT, 120 clients)   &     12034      &    9.97ms     & n/a                   & n/a       \\ 
 		\hline 
 	\end{tabular}
 \end{center}
@@ -516,11 +571,11 @@ Based on the experiments above, fill out the following table. For both of them u
 \begin{center}
 	{Maximum throughput for two middlewares.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline                                & Throughput & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware  &            &               &                       &           \\ 
-		\hline Reads: Measured on clients     &            &               & n/a                   &           \\ 
-		\hline Writes: Measured on middleware &            &               &                       & n/a       \\ 
-		\hline Writes: Measured on clients    &            &               & n/a                   & n/a       \\ 
+		\hline                                                    & Throughput     & Response time & Average time in queue & Miss rate \\ 
+		\hline Reads: Measured on middleware (8WT, 12 clients)    &    2935        &   3.12ms      &   0.12ms              & 0.0       \\ 
+		\hline Reads: Measured on clients(8WT, 12 clients)        &    2935        &   4.08ms      & n/a                   & 0.0       \\ 
+		\hline Writes: Measured on middleware (64WT, 192 clients) &    14810       &   11.84ms     &   3.25ms              & n/a       \\ 
+		\hline Writes: Measured on clients (64WT, 192 clients)    &    14813       &   12.96ms     & n/a                   & n/a       \\ 
 		\hline 
 	\end{tabular}
 \end{center}
@@ -548,7 +603,7 @@ You need to plot throughput and response time measured on the middleware as a fu
 			\hline Repetitions                      & 3                         \\ 
 			\hline 
 		\end{tabular}
-		\caption{Experiment configuration for \autoref{sec4}} \label{exp4}
+		\caption{Experiment configurations for \autoref{sec4}} \label{exp4}
 	\end{table}
 \end{center}
 
@@ -629,7 +684,7 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
 			\hline Repetitions                      & 3                       \\ 
 			\hline 
 		\end{tabular}
-		\caption{Experiment configuration for \autoref{sec5.1}} \label{exp5-1}
+		\caption{Experiment configurations for \autoref{sec5.1}} \label{exp5-1}
 	\end{table}
 \end{center}
 
@@ -657,7 +712,7 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding dis
 			\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
 			\hline 
 		\end{tabular}
-		\caption{Experiment configuration for \autoref{sec5.2}} \label{exp5-2}
+		\caption{Experiment configurations for \autoref{sec5.2}} \label{exp5-2}
 	\end{table}
 \end{center}
 
