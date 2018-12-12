@@ -688,6 +688,28 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
 	\end{table}
 \end{center}
 
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/5.eps}
+        \caption{8 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2a_extendedLatencyMiddleware_16w.eps}
+        \caption{16 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2a_extendedLatencyMiddleware_32w.eps}
+        \caption{32 worker threads}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/3_2a_extendedLatencyMiddleware_64w.eps}
+        \caption{64 worker threads}
+    \end{subfigure}
+
+    \caption{Response-, Queue- and Server-Service-Times of baseline with two Middlewares, one Server, \autoref{sec3.2}, Read-Only workload}
+    \label{fig:3-2-times-readonly}
+\end{figure}
+
 \subsubsection{Explanation}
 
 Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
