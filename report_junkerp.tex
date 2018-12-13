@@ -555,7 +555,7 @@ Furthermore, \autoref{fig:3-2-throughput} shows that doubling the number of midd
 \begin{center}
 	{Maximum throughput for one middleware.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline                                                   & Throughput     & Response time & Average time in queue & Miss rate \\ 
+		\hline                                                   & Throughput [req/s]    & Response time & Average time in queue & Miss rate \\ 
 		\hline Reads: Measured on middleware (8WT, 12 clients)   &     2939       &    3.15ms     & 0.79ms                & 0.0       \\ 
 		\hline Reads: Measured on clients (8WT, 12 clients)      &     2939       &    4.1ms      & n/a                   & 0.0       \\ 
 		\hline Writes: Measured on middleware (64WT, 120 clients)&     12030      &    8.27ms     & 3.24ms                & n/a       \\ 
@@ -567,7 +567,7 @@ Furthermore, \autoref{fig:3-2-throughput} shows that doubling the number of midd
 \begin{center}
 	{Maximum throughput for two middlewares.}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline                                                    & Throughput     & Response time & Average time in queue & Miss rate \\ 
+		\hline                                                    & Throughput [req/s]    & Response time & Average time in queue & Miss rate \\ 
 		\hline Reads: Measured on middleware (8WT, 12 clients)    &    2935        &   3.12ms      &   0.12ms              & 0.0       \\ 
 		\hline Reads: Measured on clients(8WT, 12 clients)        &    2935        &   4.08ms      & n/a                   & 0.0       \\ 
 		\hline Writes: Measured on middleware (64WT, 192 clients) &    14810       &   11.84ms     &   3.25ms              & n/a       \\ 
@@ -636,7 +636,8 @@ The results in this section are based on the aggregated request logs from the tw
 
 %Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
 Compared to \autoref{sec3.2} there are now 3 servers instead of 1 in the system. For write-only workload the middleware replicates each request to all 3 servers. This comes with some overhead because the middleware needs to send it to each server one by one and receive it one by one. However, this overhead is small compared to the difference in network latency between the servers. The way the middleware is built, it has to wait for the slowest server. \todo{add ping time table to make a point here}
-In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations. \todo{give concrete numbers or percentages}
+In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations, namely between 12.5 and 20\% less throughput from 8 up to 64 worker threads. When looking at \autoref{fig:4-times} we observe that the total response time is over 3 times higher compared to the one measured in \autoref{sec3.2}. The service time seems to be similar at first, but when inspected in detail we observe that it is slightly higher.
+At the maximum troughput configuration for each worker thread configuration (see \autoref{res4}) a difference of the service time (average time waiting for memcached) compared to \autoref{sec3.2} has been measured of 0.33ms, 0.41ms, 0.9ms and 1.5ms for 8, 16, 32 and 64 worker threads respectively. We also observed that the average time in the queue differs also exactly by this time. The amount of requests in the queue has been observed to be similar compared to \autoref{sec3.2} for each of the worker thread configurations. As each request has to wait approximately $service\_time / \#worker\_threads$.
 %hey leute ich han eventuell ein nützlichi iisicht gha (vlt isch au obvious): mer chan d queue time wie folg approximiere (tot ahzal requests ide queue)*(memcached time)/(tot azahl workers)
 %wieso? wel es chönd immer nur max. so vil requests wies workers hed glichziitig bem server si.. alli andere requests ide queue mönd warte bis si drachömend.. und sie mönd genau (servicetime)/(workers) lang warte im schnitt
 %ich find das no nützlich wel ich han be section 4 gse dass service time zu 3 server anstatt 1 server in section 3 für 8 WT zb nur minim grösser isch... aber dafür isch queue time vil grösser... aber trotzdem heds fast genau glich vil requests ide queue.. aber wemer (# req ide queue) * (service time differenz)/wt rechnet chund mer de grossi gap ide queue waiting time über .. mystery solved
@@ -647,18 +648,22 @@ In \autoref{fig:4-throughput} we observe a significantly lower maximum throughpu
 Based on the experiments above, fill out the following table with the data corresponding to the maximum throughput point for all four worker-thread scenarios.
 
 \begin{center}
-	{Maximum throughput for the full system}
-	\begin{tabular}{|l|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
-		\hline                                            & WT=8 (36 clients) & WT=16 (72 clients)  & WT=32 (120 clients)   & WT=64 (192 clients)   \\ 
-		\hline Throughput (Middleware)                    & 7110              & 9158                & 10817                 & 12568                 \\ 
-		\hline Throughput (Derived from MW response time) & (RT=4.11ms)       & (RT=6.87ms)         & (RT=9.98ms)           & (RT=14.04ms)         \\ 
-		\hline Throughput (Client)                        & 7108              & 9160                & 10813                 & 12566                 \\ 
+\begin{table}
+	\begin{tabular}{|l|p{1.7cm}|p{1.7cm}|p{1.75cm}|p{1.75cm}|}
+		\hline                                            & WT=8, 36 clients & WT=16, 72 clients  & WT=32, 120 clients   & WT=64, 192 clients   \\ 
+		\hline Throughput (Middleware) [req/s]           & 7110              & 9158                & 10817                 & 12568                 \\ 
+		\hline Throughput (Derived from MW response time) [req/s] & 7045       & 9148               & 10810           & 12549         \\
+		%8WT, 36cli: 4.11msRT, 1ms thinking time | 16WT, 72cli: 6.87msRT, 1.2ms thinkingtime | 32WT, 120cli: 9.98msRT, 1.1ms thinkingtime \ 64WT, 192cli: 14.04msRT, 1.25ms thinkingtime
+		\hline Throughput (Client) [req/s]                & 7108              & 9160                & 10813                 & 12566                 \\ 
 		\hline Average time in queue                      & 1.87ms            & 3.39ms              & 4.09ms                & 3.93                  \\ 
 		\hline Average length of queue                    & 4.87              & 11.68               & 16.18                 & 19.23                 \\ 
 		\hline Average time waiting for memcached         & 2.21ms            & 3.46                & 5.87ms                & 10.09                 \\ 
 		\hline 
 	\end{tabular}
+	\caption{Maximum throughput for the full system in \autoref{sec4}} \label{res4}
+\end{table}
 \end{center}
+
 
 Based on the data provided in these tables, draw conclusions on the state of your system for a variable number of worker threads.
 
