@@ -693,6 +693,34 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
     \label{fig:5-1-responsetime}
 \end{figure}
 
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5c_latencyPercentilesMemtier.eps}
+        \caption{Sharded}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5d_latencyPercentilesMemtier.eps}
+        \caption{Non-Sharded}
+    \end{subfigure}
+
+    \caption{Response time and percentiles measured on the client side, sections 5.1 and 5.2}
+    \label{fig:5-latencyPercentiles}
+\end{figure}
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMemtier.eps}
+        \caption{Memtier}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMiddleware.eps}
+        \caption{Middleware}
+    \end{subfigure}
+
+    \caption{Response Time Histograms}
+    \label{fig:5-latencyPercentiles}
+\end{figure}
+
 \subsubsection{Explanation}
 
 Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
