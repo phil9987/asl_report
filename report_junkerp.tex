@@ -140,7 +140,7 @@ This is assumed to be acceptable for the setup of this project, because it match
 
 \subsection{One Server} \label{sec2.1}
 
-In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in \autoref{exp2-1} below.
+In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients represents the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in \autoref{exp2-1} below.
 
 \begin{table}
     \centering
@@ -211,7 +211,7 @@ The over-saturated phase has not been reached for both read and write-only durin
 \end{center}
 
 \subsection{Two Servers} \label{sec2.2}
-In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of both memtier threads. The number of clients is equal to the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in table \autoref{exp2-2} below.
+In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of both memtier threads. The number of clients represents the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations are shown in table \autoref{exp2-2} below.
 
 \begin{table}
     \centering
@@ -291,7 +291,7 @@ Based on the experiments above, fill out the following table:
 \subsection{One Middleware} \label{sec3.1}
 After establishing baselines for memtier clients and memcached servers in \autoref{section2}, this section analyzes how adding my middleware to the system affects the preformance. Due to the additional network hops from client to middleware and from middleware to server it is unavoidable that some additional latency is introduced. The middleware is designed to hide this latency with parallelism using its worker threads and, given a sufficient amount of parallelism, avoid becoming the system's bottleneck.
 
-The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients is equal to the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-1} below.
+The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-1} below.
 
 
 
@@ -426,7 +426,7 @@ No over-saturation has been observed during this experiment.
 
 In this section the preformance of two middlewares is investigated, splitting the load into two, connecting each client machine to both middlewares.
 
-The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients is equal to the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-2} below.
+The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-2} below.
 
 \begin{table}
     \centering
@@ -439,7 +439,7 @@ The results in this section are based on the aggregated request logs from the tw
 		\hline Virtual clients per thread (read-only)   & [1,2,3,4,5,6,32] \\ 
 		\hline Workload                         & Write-only and Read-only \\
 		\hline Number of middlewares            & 2                        \\
-		\hline Worker threads per middleware    & [8..64]                  \\
+		\hline Worker threads per middleware    & [8, 16, 32, 64]          \\
 		\hline Repetitions                      & 3                        \\ 
 		\hline 
 	\end{tabular}
@@ -546,7 +546,6 @@ Furthermore, \autoref{fig:3-2-throughput} shows that doubling the number of midd
 \todo{explain why throughput is slightly higher for 2x middleware compared to 2x workerthreads?!}
 
 
-For write-only workload
 \subsection{Summary}
 
 %Based on the experiments above, fill out the following table. For both of them use the numbers from a single experiment to fill out all lines. Miss rate represents the percentage of GET requests that return no data. Time in the queue refers to the time spent in the queue between the net-thread and the worker threads.
@@ -582,9 +581,11 @@ Based on the data provided in these tables, write at least two paragraphs summar
 \section{Throughput for Writes (90 pts)}
 
 \subsection{Full System} \label{sec4}
+The setup from the previous section is now expanded even further for write-only workload. In this experiment the effect of replication can be observed as each middleware is replicating the SET requests to all three memcached servers.
 
-Connect three load generating VMs to two middlewares and three memchached servers. Run a write-only experiment. 
-You need to plot throughput and response time measured on the middleware as a function of number of clients. The measurements have to be performed for 8, 16, 32 and 64 worker threads inside each middleware.
+The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp4} below.
+%Connect three load generating VMs to two middlewares and three memchached servers. Run a write-only experiment. 
+%You need to plot throughput and response time measured on the middleware as a function of number of clients. The measurements have to be performed for 8, 16, 32 and 64 worker threads inside each middleware.
 
 \begin{table}
     \centering
@@ -633,7 +634,13 @@ You need to plot throughput and response time measured on the middleware as a fu
 \end{figure}
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+%Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+Compared to \autoref{sec3.2} there are now 3 servers instead of 1 in the system. For write-only workload the middleware replicates each request to all 3 servers. This comes with some overhead because the middleware needs to send it to each server one by one and receive it one by one. However, this overhead is small compared to the difference in network latency between the servers. The way the middleware is built, it has to wait for the slowest server. \todo{add ping time table to make a point here}
+In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations. \todo{give concrete numbers or percentages}
+%hey leute ich han eventuell ein nützlichi iisicht gha (vlt isch au obvious): mer chan d queue time wie folg approximiere (tot ahzal requests ide queue)*(memcached time)/(tot azahl workers)
+%wieso? wel es chönd immer nur max. so vil requests wies workers hed glichziitig bem server si.. alli andere requests ide queue mönd warte bis si drachömend.. und sie mönd genau (servicetime)/(workers) lang warte im schnitt
+%ich find das no nützlich wel ich han be section 4 gse dass service time zu 3 server anstatt 1 server in section 3 für 8 WT zb nur minim grösser isch... aber dafür isch queue time vil grösser... aber trotzdem heds fast genau glich vil requests ide queue.. aber wemer (# req ide queue) * (service time differenz)/wt rechnet chund mer de grossi gap ide queue waiting time über .. mystery solved
+
 
 \subsection{Summary}
 
@@ -642,13 +649,13 @@ Based on the experiments above, fill out the following table with the data corre
 \begin{center}
 	{Maximum throughput for the full system}
 	\begin{tabular}{|l|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
-		\hline                                            & WT=8 & WT=16 & WT=32 & WT=64 \\ 
-		\hline Throughput (Middleware)                    &      &       &       &       \\ 
-		\hline Throughput (Derived from MW response time) &      &       &       &       \\ 
-		\hline Throughput (Client)                        &      &       &       &       \\ 
-		\hline Average time in queue                      &      &       &       &       \\ 
-		\hline Average length of queue                    &      &       &       &       \\ 
-		\hline Average time waiting for memcached         &      &       &       &       \\ 
+		\hline                                            & WT=8 (36 clients) & WT=16 (72 clients)  & WT=32 (120 clients)   & WT=64 (192 clients)   \\ 
+		\hline Throughput (Middleware)                    & 7110              & 9158                & 10817                 & 12568                 \\ 
+		\hline Throughput (Derived from MW response time) & (RT=4.11ms)       & (RT=6.87ms)         & (RT=9.98ms)           & (RT=14.04ms)         \\ 
+		\hline Throughput (Client)                        & 7108              & 9160                & 10813                 & 12566                 \\ 
+		\hline Average time in queue                      & 1.87ms            & 3.39ms              & 4.09ms                & 3.93                  \\ 
+		\hline Average length of queue                    & 4.87              & 11.68               & 16.18                 & 19.23                 \\ 
+		\hline Average time waiting for memcached         & 2.21ms            & 3.46                & 5.87ms                & 10.09                 \\ 
 		\hline 
 	\end{tabular}
 \end{center}
@@ -710,15 +717,23 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMemtier.eps}
-        \caption{Memtier}
+        \caption{Memtier, Sharded}
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMiddleware.eps}
-        \caption{Middleware}
+        \caption{Middleware, Sharded}
     \end{subfigure}
 
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5d_histogramMemtier.eps}
+        \caption{Memtier, Non-Sharded}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5d_histogramMiddleware.eps}
+        \caption{Middleware, Non-Sharded}
+    \end{subfigure}
     \caption{Response Time Histograms}
-    \label{fig:5-latencyPercentiles}
+    \label{fig:5-1:Histograms}
 \end{figure}
 
 \subsubsection{Explanation}
@@ -733,17 +748,17 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding dis
     \begin{table}
         \centering
     	\begin{tabular}{|l|c|}
-    		\hline Number of servers                & 3                       \\ 
-    		\hline Number of client machines        & 3                       \\ 
-    		\hline Instances of memtier per machine & 2                       \\ 
-    		\hline Threads per memtier instance     & 1                       \\
-    		\hline Virtual clients per thread       & 2                		 \\ 
-    		\hline Workload                         & ratio=1:$<$Multi-Get size$>$              \\
-    		\hline Multi-Get behavior               & Non-Sharded             \\
-    		\hline Multi-Get size                   & [1..9]                  \\
-    		\hline Number of middlewares            & 2                       \\
-    		\hline Worker threads per middleware    & max. throughput config. \\
-    		\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
+    		\hline Number of servers                & 3                            \\ 
+    		\hline Number of client machines        & 3                            \\ 
+    		\hline Instances of memtier per machine & 2                            \\ 
+    		\hline Threads per memtier instance     & 1                            \\
+    		\hline Virtual clients per thread       & 2                		       \\ 
+    		\hline Workload                         & ratio=1:$<$Multi-Get size$>$ \\
+    		\hline Multi-Get behavior               & Non-Sharded                  \\
+    		\hline Multi-Get size                   & [1, 3, 6 9]                  \\
+    		\hline Number of middlewares            & 2                            \\
+    		\hline Worker threads per middleware    & 64                           \\
+    		\hline Repetitions                      & 3                            \\ 
     		\hline 
     	\end{tabular}
     	\caption{Experiment configurations for \autoref{sec5.2}} \label{exp5-2}
