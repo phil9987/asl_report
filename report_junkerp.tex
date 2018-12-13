@@ -604,8 +604,9 @@ You need to plot throughput and response time measured on the middleware as a fu
 \end{table}
 
 \begin{figure}
-    \includegraphics[width=1\linewidth]{plots/4b_throughputMiddleware.eps}
-    \caption{Throughput of full system, write only}
+    \centering
+    \includegraphics[width=0.7\linewidth]{plots/4b_throughputMiddleware.eps}
+    \caption{Throughput of full system, write only, \autoref{sec4}}
     \label{fig:4-throughput}
 \end{figure}
 
@@ -627,7 +628,7 @@ You need to plot throughput and response time measured on the middleware as a fu
         \caption{64 worker threads}
     \end{subfigure}
 
-    \caption{Response-, Queue- and Server-Service-Times of full system, Write-only workload}
+    \caption{Response-, Queue- and Server-Service-Times of full system, Write-only workload for \autoref{sec4}}
     \label{fig:4-times}
 \end{figure}
 \subsubsection{Explanation}
@@ -664,32 +665,33 @@ For multi-GET workloads, memtier will generate a mixture of SETs, GETs, and mult
 
 Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
 
-\begin{table}
-    \centering
-	\begin{tabular}{|l|c|}
-		\hline Number of servers                & 3                       \\ 
-		\hline Number of client machines        & 3                       \\ 
-		\hline Instances of memtier per machine & 2                       \\ 
-		\hline Threads per memtier instance     & 1                       \\
-		\hline Virtual clients per thread       & 2     		            \\ 
-		\hline Workload                         & ratio=1:$<$Multi-Get size$>$             \\
-		\hline Multi-Get behavior               & Sharded                 \\
-		\hline Multi-Get size                   & [1, 3, 6, 9]            \\
-		\hline Number of middlewares            & 2                       \\
-		\hline Worker threads per middleware    & 64                      \\
-		\hline Repetitions                      & 3                       \\ 
-		\hline 
-	\end{tabular}
-	\caption{Experiment configurations for \autoref{sec5.1}} \label{exp5-1}
-\end{table}
+\begin{center}
+    \begin{table}
+        \centering
+    	\begin{tabular}{|l|c|}
+    		\hline Number of servers                & 3                       \\ 
+    		\hline Number of client machines        & 3                       \\ 
+    		\hline Instances of memtier per machine & 2                       \\ 
+    		\hline Threads per memtier instance     & 1                       \\
+    		\hline Virtual clients per thread       & 2     		            \\ 
+    		\hline Workload                         & ratio=1:$<$Multi-Get size$>$             \\
+    		\hline Multi-Get behavior               & Sharded                 \\
+    		\hline Multi-Get size                   & [1, 3, 6, 9]            \\
+    		\hline Number of middlewares            & 2                       \\
+    		\hline Worker threads per middleware    & 64                      \\
+    		\hline Repetitions                      & 3                       \\ 
+    		\hline 
+    	\end{tabular}
+    	\caption{Experiment configurations for \autoref{sec5.1}} \label{exp5-1}
+    \end{table}
+\end{center}
 
 \begin{figure}
     \centering
     \includegraphics[width=0.7\linewidth]{plots/5a_latencyMemtier.eps}
-    \caption{Response time measured on the client}
+    \caption{Response time measured on the client, sharded}
     \label{fig:5-1-responsetime}
 \end{figure}
-
 
 \subsubsection{Explanation}
 
@@ -699,24 +701,33 @@ Provide a detailed analysis of the results (e.g., bottleneck analysis, component
 
 Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding disabled. Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
 
-\begin{table}
+\begin{center}
+    \begin{table}
+        \centering
+    	\begin{tabular}{|l|c|}
+    		\hline Number of servers                & 3                       \\ 
+    		\hline Number of client machines        & 3                       \\ 
+    		\hline Instances of memtier per machine & 2                       \\ 
+    		\hline Threads per memtier instance     & 1                       \\
+    		\hline Virtual clients per thread       & 2                		 \\ 
+    		\hline Workload                         & ratio=1:$<$Multi-Get size$>$              \\
+    		\hline Multi-Get behavior               & Non-Sharded             \\
+    		\hline Multi-Get size                   & [1..9]                  \\
+    		\hline Number of middlewares            & 2                       \\
+    		\hline Worker threads per middleware    & max. throughput config. \\
+    		\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
+    		\hline 
+    	\end{tabular}
+    	\caption{Experiment configurations for \autoref{sec5.2}} \label{exp5-2}
+    \end{table}
+\end{center}
+
+\begin{figure}
     \centering
-	\begin{tabular}{|l|c|}
-		\hline Number of servers                & 3                       \\ 
-		\hline Number of client machines        & 3                       \\ 
-		\hline Instances of memtier per machine & 2                       \\ 
-		\hline Threads per memtier instance     & 1                       \\
-		\hline Virtual clients per thread       & 2                		 \\ 
-		\hline Workload                         & ratio=1:$<$Multi-Get size$>$              \\
-		\hline Multi-Get behavior               & Non-Sharded             \\
-		\hline Multi-Get size                   & [1..9]                  \\
-		\hline Number of middlewares            & 2                       \\
-		\hline Worker threads per middleware    & max. throughput config. \\
-		\hline Repetitions                      & 3 or more (at least 1 minute each)               \\ 
-		\hline 
-	\end{tabular}
-	\caption{Experiment configurations for \autoref{sec5.2}} \label{exp5-2}
-\end{table}
+    \includegraphics[width=0.7\linewidth]{plots/5b_latencyMemtier.eps}
+    \caption{Response time measured on the client, non-sharded}
+    \label{fig:5-2-responsetime}
+\end{figure}
 
 \subsubsection{Explanation}
 
