@@ -649,13 +649,13 @@ Based on the experiments above, fill out the following table with the data corre
 \begin{center}
 	{Maximum throughput for the full system}
 	\begin{tabular}{|l|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
-		\hline                                            & WT=8 & WT=16 & WT=32 & WT=64 \\ 
-		\hline Throughput (Middleware)                    &      &       &       &       \\ 
-		\hline Throughput (Derived from MW response time) &      &       &       &       \\ 
-		\hline Throughput (Client)                        &      &       &       &       \\ 
-		\hline Average time in queue                      &      &       &       &       \\ 
-		\hline Average length of queue                    &      &       &       &       \\ 
-		\hline Average time waiting for memcached         &      &       &       &       \\ 
+		\hline                                            & WT=8 (36 clients) & WT=16 (72 clients)  & WT=32 (120 clients)   & WT=64 (192 clients)   \\ 
+		\hline Throughput (Middleware)                    & 7110              & 9158                & 10817                 & 12568                 \\ 
+		\hline Throughput (Derived from MW response time) & (RT=4.11ms)       & (RT=6.87ms)         & (RT=9.98ms)           & (RT=14.04ms)         \\ 
+		\hline Throughput (Client)                        & 7108              & 9160                & 10813                 & 12566                 \\ 
+		\hline Average time in queue                      & 1.87ms            & 3.39ms              & 4.09ms                & 3.93                  \\ 
+		\hline Average length of queue                    & 4.87              & 11.68               & 16.18                 & 19.23                 \\ 
+		\hline Average time waiting for memcached         & 2.21ms            & 3.46                & 5.87ms                & 10.09                 \\ 
 		\hline 
 	\end{tabular}
 \end{center}
