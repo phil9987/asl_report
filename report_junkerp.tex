@@ -636,16 +636,13 @@ The results in this section are based on the aggregated request logs from the tw
 
 %Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
 Compared to \autoref{sec3.2} there are now 3 servers instead of 1 in the system. For write-only workload the middleware replicates each request to all 3 servers. This comes with some overhead because the middleware needs to send it to each server one by one and receive it one by one. However, this overhead is small compared to the difference in network latency between the servers. The way the middleware is built, it has to wait for the slowest server. \todo{add ping time table to make a point here}
-In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations, namely between 12.5 and 20\% less throughput from 8 up to 64 worker threads. When looking at \autoref{fig:4-times} we observe that the total response time is over 3 times higher compared to the one measured in \autoref{sec3.2}. The service time seems to be similar at first, but when inspected in detail we observe that it is slightly higher.
-At the maximum troughput configuration for each worker thread configuration (see \autoref{res4}) a difference of the service time (average time waiting for memcached) compared to \autoref{sec3.2} has been measured of 0.33ms, 0.41ms, 0.9ms and 1.5ms for 8, 16, 32 and 64 worker threads respectively. We also observed that the average time in the queue differs also exactly by this time. The amount of requests in the queue has been observed to be similar compared to \autoref{sec3.2} for each of the worker thread configurations. As each request has to wait approximately $service\_time / \#worker\_threads$.
-%hey leute ich han eventuell ein nützlichi iisicht gha (vlt isch au obvious): mer chan d queue time wie folg approximiere (tot ahzal requests ide queue)*(memcached time)/(tot azahl workers)
-%wieso? wel es chönd immer nur max. so vil requests wies workers hed glichziitig bem server si.. alli andere requests ide queue mönd warte bis si drachömend.. und sie mönd genau (servicetime)/(workers) lang warte im schnitt
-%ich find das no nützlich wel ich han be section 4 gse dass service time zu 3 server anstatt 1 server in section 3 für 8 WT zb nur minim grösser isch... aber dafür isch queue time vil grösser... aber trotzdem heds fast genau glich vil requests ide queue.. aber wemer (# req ide queue) * (service time differenz)/wt rechnet chund mer de grossi gap ide queue waiting time über .. mystery solved
+In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations, namely between 12.5 and 20\% less throughput from 8 up to 64 worker threads. When looking at \autoref{fig:4-times} we observe that the total response time slightly higher compared to the one measured in \autoref{sec3.2}. The service time seems to be similar at first, but when inspected in detail we observe that it is slightly higher.
+At the maximum throughput configuration for each worker thread configuration (see \autoref{res4}) a difference of the service time (average time waiting for memcached) compared to \autoref{sec3.2} has been measured of 0.33ms, 0.41ms, 0.9ms and 1.5ms for 8, 16, 32 and 64 worker threads respectively. We also observed that the average time in the queue differs also exactly by this time. The amount of requests in the queue has been observed to be similar compared to \autoref{sec3.2}. The higher memcached service time can be explained with the implementation of the middleware and the network structure of the system at hand in mind, where the middleware needs to wait for the response of the slowest memcached server before it can finish a request successfully and start to handle the next one.
+\todo{analyze under-saturation and saturation phases}
+
 
 
 \subsection{Summary}
-
-Based on the experiments above, fill out the following table with the data corresponding to the maximum throughput point for all four worker-thread scenarios.
 
 \begin{center}
 \begin{table}
@@ -665,17 +662,17 @@ Based on the experiments above, fill out the following table with the data corre
 \end{center}
 
 
-Based on the data provided in these tables, draw conclusions on the state of your system for a variable number of worker threads.
-
+\todo{Based on the data provided in these tables, draw conclusions on the state of your system for a variable number of worker threads.}
 \section{Gets and Multi-gets (90 pts)}
 
-For this set of experiments you will use three load generating machines, two middlewares and three memcached servers. Each memtier instance should have 2 virtual clients in total and the number of middleware worker threads is 64, or the one that provides the highest throughput in your system (whichever number of threads is smaller).
-
-For multi-GET workloads, memtier will generate a mixture of SETs, GETs, and multi-GETs. Memtier only allows to specify the maximum number of keys in a multi-GET request. Therefore, be aware that requests can also contain fewer keys than the provided value. It is recommended to record the average size of the multi-GETs. You will have to measure response time on the client as a function of multi-get size, with and without sharding on the middlewares.
+This section analyzes the effect on throughput and response time of sharding MULTIGET requests.
+%For multi-GET workloads, memtier will generate a mixture of SETs, GETs, and multi-GETs. Memtier only allows to specify the maximum number of keys in a multi-GET request. Therefore, be aware that requests can also contain fewer keys than the provided value. It is recommended to record the average size of the multi-GETs. You will have to measure response time on the client as a function of multi-get size, with and without sharding on the middlewares.
 
 \subsection{Sharded Case} \label{sec5.1}
 
-Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
+%Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th 
+The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp5-1} below.
+
 
 \begin{center}
     \begin{table}
@@ -699,13 +696,6 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
 \end{center}
 
 \begin{figure}
-    \centering
-    \includegraphics[width=0.7\linewidth]{plots/5a_latencyMemtier.eps}
-    \caption{Response time measured on the client, sharded}
-    \label{fig:5-1-responsetime}
-\end{figure}
-
-\begin{figure}
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/logSection5c_latencyPercentilesMemtier.eps}
         \caption{Sharded}
@@ -719,35 +709,13 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding ena
     \label{fig:5-latencyPercentiles}
 \end{figure}
 
-\begin{figure}
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMemtier.eps}
-        \caption{Memtier, Sharded}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMiddleware.eps}
-        \caption{Middleware, Sharded}
-    \end{subfigure}
-
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/logSection5d_histogramMemtier.eps}
-        \caption{Memtier, Non-Sharded}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/logSection5d_histogramMiddleware.eps}
-        \caption{Middleware, Non-Sharded}
-    \end{subfigure}
-    \caption{Response Time Histograms}
-    \label{fig:5-1:Histograms}
-\end{figure}
 
 \subsubsection{Explanation}
-
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+%Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
 
 \subsection{Non-sharded Case} \label{sec5.2}
-
-Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding disabled. Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
+%Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding disabled. Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
+The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp5-2} below.
 
 \begin{center}
     \begin{table}
@@ -779,11 +747,37 @@ Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding dis
 
 \subsubsection{Explanation}
 
-Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+%Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+\todo{elaborate on non-sharded histograms and percentiles}
 
 \subsection{Histogram}
+%For the case with 6 keys inside the multi-get, display four histograms representing the sharded and non-sharded response time distribution, both as measured on the client, and inside the middleware. Choose the bucket size in the same way for all four, and such that there are at least 10 buckets on each of the graphs.
+\autoref{fig:5-1:Histograms} shows histograms for both memtier and middleware both for a sharded and a non-sharded configuration. The histograms were generated using the data from \autoref{sec5.1} and \autoref{sec5.2} for the configuration of memtier where 6 key MULTIGET requests were sent. For sharded and non-sharded independently we observe a shift from memtier to middleware, namely the histogram of the middleware is shifted 1 bucket to the right, meaning the response times measured at the client are around 1ms longer. This can be explained with the additional round-trip time of each request from client to middleware. The middleware measures its response time from the arrival of the request until before it is returned to the client, so we expect the response time to be 1 round-trip time off compared to the response time measured at the client. Looking at the histogram and the mean ping time of 1ms this hypothesis is confirmed.
+\todo{further explain differences between sharded vs non-sharded }
 
-For the case with 6 keys inside the multi-get, display four histograms representing the sharded and non-sharded response time distribution, both as measured on the client, and inside the middleware. Choose the bucket size in the same way for all four, and such that there are at least 10 buckets on each of the graphs.
+
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMemtier.eps}
+        \caption{Memtier, Sharded}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMiddleware.eps}
+        \caption{Middleware, Sharded}
+    \end{subfigure}
+
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5d_histogramMemtier.eps}
+        \caption{Memtier, Non-Sharded}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/logSection5d_histogramMiddleware.eps}
+        \caption{Middleware, Non-Sharded}
+    \end{subfigure}
+    \caption{Response Time Histograms}
+    \label{fig:5-1:Histograms}
+\end{figure}
 
 \subsection{Summary}
 
