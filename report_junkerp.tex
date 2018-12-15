@@ -58,8 +58,14 @@ It has a single networking thread, the producer, which accepts incoming requests
 On the other hand it has a configurable amount of worker threads, the consumers, which consume the queue.
 They are connected via a Java BlockingQueue. For this implementation I chose the LinkedBlockingQueue implementation because it provides thread safety, separate read and write locks and no maximum capacity.
 All threads are created and started by the main thread.
-In addition, the main thread also creates the request queue and registers a shutdown hook, which assures that all logfiles are written before the system terminates on a SIGTERM signal.
-\todo{create system overview illustration and refer to it}
+In addition, the main thread also creates the request queue and registers a shutdown hook, which assures that all logfiles are written before the system terminates on a SIGTERM signal. An overview of the system is provided in \autoref{fig:Overview}.
+
+\begin{figure}
+    \includegraphics[width=.8\linewidth]{plots/SystemOverview.png}
+    \caption{System Overview}
+    \label{fig:Overview}
+\end{figure}
+
 
 The networker thread handles the incoming connections from the clients and performs a minimal request parsing to determine whether a request is complete and therefore ready to be processed.
 For this, the networker uses Java's non-blocking I/O (NIO) mechanisms to set up an event polling loop over all connected sockets in its run method.
@@ -1159,12 +1165,69 @@ Note that for queuing models it is enough to use the experimental results from t
 \end{table}
 
 \subsection{Network of Queues} \label{sec7.3}
-
-
-
 %Based on Section 3, build a network of queues which simulates your system. Motivate the design of your network of queues and relate it wherever possible to a component of your system. Motivate your choice of input parameters for the different queues inside the network. Perform a detailed analysis of the utilization of each component and clearly state what the bottleneck of your system is. Explain for which experiments the predictions of the model match and for which they do not.
 % Q: For Section 7, which exact configuration should I use for network of queues?
 % A: You need to consider both 1 and 2 middleware configuration. You need to analyze both read only and write only workloads. You can set the number of worker threads to the constant that delivers highest throughput.
+\todo{add data tables and explain choice of parameters}
+\begin{table}
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lllllll}
+        \hline
+        \# Clients & 6  & 18 & 36 & 72 & 120 & 192\\
+        \hline
+        Throughput & 2984.7 & 5978.9 & 8975.4 & 11937.5 & 4450.3 & NA\\
+        Response Time & 2ms & 3ms & 4ms & 6ms & 27.4ms & NA\\
+        Queue Length & 3 & 12 & 26.9 & 59.9 & 117.5 & NA\\
+        Utilization & 0.05 & 0.18 & 0.46 & 0.93 & 0.34 & NA\\
+        \hline
+        \end{tabular}
+    \caption{1 Middleware, Write-Only}
+    \end{subtable}
+    
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{llllllll}
+        \hline
+        \# Clients & 6 & 12 & 18 & 24 & 30 & 36 & 192\\
+        \hline
+        Throughput & 2984.7 & 2606.1 & 2666.6 & 2666.7 & 2666.7 & 2666.7 & NA\\
+        Response Time & 2ms & 4.6ms & 6.7ms & 9ms & 11.3ms & 13.5ms & NA\\
+        Queue Length & 3 & 9.3 & 12.7 & 21.3 & 27.3 & 33.3 & NA\\
+        Utilization & 0.37 & 0.97 & 1 & 1 & 1 & 1 & NA\\
+        \hline
+        \end{tabular}
+    \caption{1 Middleware, Read-Only}
+    \end{subtable}
+    
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lllllll}
+        \hline
+        \# Clients & 6 & 18 & 36 & 72 & 120 & 192\\
+        \hline
+        Throughput & 1993.3 & 5979.5 & 8976.5 & 11978.8 & 11910.6 & NA\\
+        Response Time & 3ms & 3ms & 4ms & 6ms & 10ms & NA\\
+        Queue Length & 1.5 & 4.5 & 7.6 & 10.2 & 13.4 & NA\\
+        Utilization & 0.03 & 0.09 & 0.21 & 0.84 & 0.94 & NA\\
+        \hline
+        \end{tabular}
+    \caption{2 Middlewares, Write-Only}
+    \end{subtable}
+    
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{llllllll}
+        \hline
+        \# Clients & 6 & 12 & 18 & 24 & 30 & 36 & 192\\
+        \hline
+        Throughput & 2984.9 & 2985.7 & 2699.2 & 2938.9 & 3024.7 & 3068.1 & NA\\
+        Response Time & 2ms & 4ms & 6.6ms & 8.1ms & 9.9ms & 11.7ms & NA\\
+        Queue Length & 1.5 & 4.5 & 7.6 & 10.5 & 13.5 & 16.5 & NA\\
+        Utilization & 0.18 & 0.55 & 0.84 & 0.91 & 0.94 & 0.95 & NA\\
+        \hline
+        \end{tabular}
+    \caption{2 Middlewares, Read-Only}
+    \end{subtable}
+    \caption{Predicted values of Network of Queues}
+    \label{Table:NetworkOfQueues}
+\end{table}
 
 \begin{figure}
     \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues1MW.png}
