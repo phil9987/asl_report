@@ -1064,7 +1064,7 @@ Note that for queuing models it is enough to use the experimental results from t
     \label{mm1}
 \end{table}
 
-\subsection{M/M/m}
+\subsection{M/M/m} \label{sec7.2}
 
 %Build an M/M/m model based on Section 4, where each middleware worker thread is represented as one service.  Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
 
@@ -1076,7 +1076,7 @@ Note that for queuing models it is enough to use the experimental results from t
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/7_MMm_ResponseTimeObserved.eps}
     \end{subfigure}
-    \caption{M/M/m predicted and measured Response Times, Full System, \autoref{sec7.1}}
+    \caption{M/M/m predicted and measured Response Times, Full System, \autoref{sec7.2}}
     \label{fig:mmm-RT}
 \end{figure}
 
@@ -1087,7 +1087,7 @@ Note that for queuing models it is enough to use the experimental results from t
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/7_MMm_QueueSizeObserved.eps}
     \end{subfigure}
-    \caption{M/M/m predicted and measured Queue Size, Full System, \autoref{sec7.1}}
+    \caption{M/M/m predicted and measured Queue Size, Full System, \autoref{sec7.2}}
     \label{fig:mmm-queueLen}
 \end{figure}
 \begin{table}
@@ -1158,7 +1158,7 @@ Note that for queuing models it is enough to use the experimental results from t
     \label{MMm}
 \end{table}
 
-\subsection{Network of Queues}
+\subsection{Network of Queues} \label{sec7.3}
 
 
 
@@ -1167,16 +1167,15 @@ Note that for queuing models it is enough to use the experimental results from t
 % A: You need to consider both 1 and 2 middleware configuration. You need to analyze both read only and write only workloads. You can set the number of worker threads to the constant that delivers highest throughput.
 
 \begin{figure}
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/2_1_throughput.eps}
-        \caption{Throughput}
-    \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
-        \includegraphics[width=1\linewidth]{plots/2_1_latency.eps}
-        \caption{Response Time}
-    \end{subfigure}
-    \caption{Baseline without Middleware and one Server}
-    \label{fig:2-1}
+    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues1MW.png}
+    \caption{Network of Queues for 1 Middleware}
+    \label{fig:7-3:1MW}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues2MW.png}
+    \caption{Network of Queues for 1 Middleware}
+    \label{fig:7-3:2MW}
 \end{figure}
 
 \end{document}
