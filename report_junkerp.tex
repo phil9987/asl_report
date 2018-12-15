@@ -61,12 +61,12 @@ All threads are created and started by the main thread.
 In addition, the main thread also creates the request queue and registers a shutdown hook, which assures that all logfiles are written before the system terminates on a SIGTERM signal. An overview of the system is provided in \autoref{fig:Overview}.
 
 \begin{figure}
-    \includegraphics[width=.8\linewidth]{plots/SystemOverview.svg}
+    \includegraphics[width=.8\linewidth]{plots/SystemOverview.pdf}
     \caption{System Overview}
     \label{fig:Overview}
 \end{figure}
 
-
+\subsubsection{Networker Thread}
 The networker thread handles the incoming connections from the clients and performs a minimal request parsing to determine whether a request is complete and therefore ready to be processed.
 For this, the networker uses Java's non-blocking I/O (NIO) mechanisms to set up an event polling loop over all connected sockets in its run method.
 A Selector, which is responsible to efficiently poll many file descriptors, is used to accept and register new connections.
@@ -74,6 +74,7 @@ The networker thread reads any connected socket that becomes readable.
 An empty request structure is initialized during setup of a connection and stored using the Selector's attachment mechanism provided by Java NIO.
 The request structure, which is being discussed in more detail in the next paragraph, is used to parse and buffer incoming requests over the connection it is attached to and to store logs related to a request.
 
+\subsubsection{Request Parsing}
 % Explain how messages are parsed 
 Requests might arrive in multiple packets and therefore might not be complete within a single socket read operation.
 To make sure only complete requests are forwardet to the worker threads, the networker thread maintains a single request structure per connection into which incoming data is buffered until the request is complete.
@@ -81,7 +82,7 @@ A single request structure per connection is sufficient because the system is cl
 This design choice leads to a minimum number of request object allocations and because request objects are being reused the garbage collector is only needed on system shutdown.
 Because of the closedness of the system no synchronization on the request object is necessary, even though it is being shared between networker and worker thread, as long as the worker never uses the object after the response has been sent to the client.
 
-Detecting whether a request is complete is done in a very simple way in order to reduce the work done in the networker thread.
+Detecting whether a request is complete is done in a simplistic way in order to reduce the work done in the networker thread.
 The isComplete function only checks whether the last byte of the buffer is equal to a newline character.
 The rest of the parsing is then done inside the worker thread. By checking the first character in the buffer, the worker thread determines whether it is a get or a set request.
 Furthermore, if it is a get request, it parses the other arguments to determine whether it is a multiget (more than 1 key) or a get request (exactly 1 key).
@@ -91,6 +92,7 @@ The only exception is in case an error occurs to make it easier to trace the err
 To achieve this, the request object only maintains a list of offsets which indicate the position of space and newline characters in the header of the request.
 In sharding mode, the offsets will be used by the worker handling the request to create byte buffer slices for each key range.
 
+\subsubsection{Worker Threads}
 Each worker thread continuously reads blockingly from the queue in its run method.
 Once it gets a request, it parses its type and then chooses the correct function to handle it (handleGet, handleMultiget, handleSet).
 In case sharded mode is deactivated, handleMultiget is equivalent to handleGet.
@@ -108,6 +110,7 @@ For this project, non-blocking schemes were not considered in order to reduce co
 Set requests are not load balanced but replicated to every server to the middleware.
 Again, replication is handled in a blocking way by forwarding the request to each server one after another.
 
+\subsubsection{Statistics of Requests}
 % explain how statistics are gathered in a multi-threaded setting. 
 During the handling of a request in the middleware, various meta data is being attached to it, such as time and queue size when the request entered the middleware, number of cache misses, waiting time in queue, service time on memcached servers, total time spent in middleware and information about which servers have been contacted to service this request.
 This meta data is used to log statistics about the processed requests.
@@ -126,7 +129,7 @@ The AggregationLogger only writes sums to the log, which means there are no erro
 In the aggregated log data there is one entry per second for every worker.
 To merge this data into one entry per second, the python script 'postprocessing.py' is used.
 
-To account for the startup and the cooldown phase, the first 5 seconds and the last 4 seconds of each log were dropped, to account for warmup and cooldown phase respectively.
+To account for the startup and the cooldown phase, the first 3 seconds and the last 3 seconds of each log were dropped, to account for warmup and cooldown phase respectively.
 These durations were empirically determined by looking plots showing the performance of the middleware over time for various configurations.
 All aggregation windows are then aggregated into an overall per-run aggregate.
 For experiments with multiple middlewares, the log files of the middlewares are aggregated (using 'postprocessing.py') before creating the overall per-run aggregate.
@@ -1230,13 +1233,13 @@ Note that for queuing models it is enough to use the experimental results from t
 \end{table}
 
 \begin{figure}
-    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues1MW.svg}
+    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues1MW.pdf}
     \caption{Network of Queues for 1 Middleware}
     \label{fig:7-3:1MW}
 \end{figure}
 
 \begin{figure}
-    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues2MW.svg}
+    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues2MW.pdf}
     \caption{Network of Queues for 1 Middleware}
     \label{fig:7-3:2MW}
 \end{figure}
