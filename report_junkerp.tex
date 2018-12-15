@@ -969,19 +969,214 @@ As we have seen in previous chapters \todo{be more specific here}, the decrease 
 
 Note that for queuing models it is enough to use the experimental results from the previous sections. It is, however, possible that the numbers you need are not only the ones in the figures we asked for, but also the internal measurements that you have obtained through instrumentation of your middleware.
 
-\subsection{M/M/1}
+\subsection{M/M/1} \label{sec7.1}
 
 %Build queuing model based on Section 4 (write-only throughput) for each worker-thread configuration of the middleware. Use one M/M/1 queue to model your entire system. Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MM1_ResponseTimePredicted.eps}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MM1_ResponseTimeObserved.eps}
+    \end{subfigure}
+    \caption{M/M/1 predicted and measured Response Times, Full System, \autoref{sec7.1}}
+    \label{fig:mm1-RT}
+\end{figure}
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MM1_QueueSizePred.eps}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MM1_QueueSizeObserved.eps}
+    \end{subfigure}
+    \caption{M/M/1 predicted and measured Queue Size, Full System, \autoref{sec7.1}}
+    \label{fig:mm1-queueLen}
+\end{figure}
 - model too simplistic. In our model it is not possible that more than numClients requests are in queue, in model this is possible
+
+
+\begin{table}
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$&  $\rho$& $E[r]$&        $E[n\_q]$& $E[w]$\\
+        \hline
+          6 &    2571.91 &    0.35 &    0.21 // 2.33 &     0.19 // 0.11 &    0.07 // 0.07 \\
+         18 &    6093.61 &    0.83 &    0.83 // 2.95 &     4.22 // 0.62 &    0.69 // 0.20 \\
+         36 &    7107.66 &    0.97 &    5.20 // 5.06 &    35.98 // 4.87 &    5.06 // 1.87 \\
+         72 &    7151.63 &    0.98 &   6.74 // 10.06 &   47.22 // 22.71 &    6.60 // 6.86 \\
+        120 &    7229.38 &    0.99 &  14.16 // 16.59 &  101.38 // 46.78 &  14.02 // 13.44 \\
+        192 &    7283.78 &    1.00 &  61.66 // 26.35 &  448.10 // 82.55 &  61.52 // 23.17 \\
+        \hline
+        \end{tabular}
+        \caption{8 Worker Threads, $\mu = 7300 ops/s$}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$&  $\rho$& $E[r]$&        $E[n\_q]$& $E[w]$\\
+        \hline
+          6 &    2577.76 &    0.28 &    0.15 // 2.32 &     0.11 // 0.11 &    0.04 // 0.07 \\
+         18 &    6330.40 &    0.68 &    0.34 // 2.84 &     1.45 // 0.70 &    0.23 // 0.12 \\
+         36 &    7930.72 &    0.85 &    0.73 // 4.53 &     4.94 // 1.58 &    0.62 // 0.38 \\
+         72 &    9159.92 &    0.98 &    7.14 // 7.85 &   64.40 // 11.68 &    7.03 // 3.39 \\
+        120 &    9229.22 &    0.99 &  14.13 // 13.00 &  129.41 // 35.57 &   14.02 // 8.55 \\
+        192 &    9267.70 &    1.00 &  30.96 // 20.71 &  285.92 // 70.90 &  30.85 // 16.13 \\
+        \hline
+        \end{tabular}
+        \caption{16 Worker Threads, $\mu = 9300 ops/s$}
+    \end{subtable}
+    
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$&  $\rho$& $E[r]$&        $E[n\_q]$& $E[w]$\\
+        \hline
+          6 &    2596.04 &    0.24 &    0.12 // 2.31 &     0.07 // 0.10 &    0.03 // 0.07 \\
+         18 &    6274.84 &    0.58 &    0.22 // 2.86 &     0.78 // 0.66 &    0.12 // 0.12 \\
+         36 &    7991.58 &    0.73 &    0.34 // 4.50  &     2.01 // 1.67 &    0.25 // 0.21 \\
+         72 &   10070.24 &    0.92 &    1.21 // 7.14 &    11.21 // 3.22 &    1.11 // 0.65 \\
+        120 &   10813.54 &    0.99 &  11.57 // 11.09 &  124.08 // 16.18 &   11.47 // 4.09 \\
+        192 &   10820.80 &    0.99 &  12.63 // 17.74 &  135.63 // 51.73 &  12.53 // 10.68 \\
+        \hline
+        \end{tabular}
+        \caption{32 Worker Threads, $\mu = 10900 ops/s$}
+    \end{subtable}
+    
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$&  $\rho$& $E[r]$&        $E[n\_q]$&        $E[w]$\\
+        \hline
+          6 &    2611.63 &    0.21 &    0.10 // 2.29 &     0.05 // 0.10 &   0.02 // 0.07 \\
+         18 &    6262.69 &    0.50 &    0.16 // 2.87 &     0.49 // 0.60 &   0.08 // 0.12 \\
+         36 &    7933.14 &    0.63 &    0.21 // 4.53 &     1.07 // 1.62 &   0.13 // 0.21 \\
+         72 &   10147.69 &    0.81 &    0.41 // 7.09 &     3.33 // 3.13 &   0.33 // 0.34 \\
+        120 &   12036.31 &    0.96 &    1.77 // 9.96 &    20.40 // 4.52 &   1.69 // 0.46 \\
+        192 &   12565.70 &    1.00 &  29.16 // 15.27 &  365.40 // 19.24 &  29.08 // 3.93 \\
+        \hline
+        \end{tabular}
+        \caption{64 Worker Threads, $\mu = 12600 ops/s$}
+    \end{subtable}
+
+    \caption{System Properties, M/M/1 Model. Please note that in the three rightmost columns the values are displayed as $predicted  //  observed$. $E[r]$ is the response time in ms,  $E[n\_q]$ displays the number of requests in the queue and $E[w]$ displays is the queue waiting time in ms. }
+    \label{mm1}
+\end{table}
 
 \subsection{M/M/m}
 
 %Build an M/M/m model based on Section 4, where each middleware worker thread is represented as one service.  Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
 
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MMm_ResponseTimePredicted.eps}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MMm_ResponseTimeObserved.eps}
+    \end{subfigure}
+    \caption{M/M/m predicted and measured Response Times, Full System, \autoref{sec7.1}}
+    \label{fig:mmm-RT}
+\end{figure}
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MMm_QueueSizePred.eps}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/7_MMm_QueueSizeObserved.eps}
+    \end{subfigure}
+    \caption{M/M/m predicted and measured Queue Size, Full System, \autoref{sec7.1}}
+    \label{fig:mmm-queueLen}
+\end{figure}
+\begin{table}
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$ &  $\rho$ &         $E[r]$ &        $E[n\_q]$ &        $E[w]$ \\
+        \hline
+          6 &    2571.91 &    0.35 &    2.19 // 2.33 &     0.00 // 0.11 &   0.00 // 0.07 \\
+         18 &    6093.61 &    0.83 &    2.52 // 2.95 &     1.97 // 0.62 &   0.00 // 0.20 \\
+         36 &    7107.66 &    0.97 &    6.77 // 5.06 &    32.53 // 4.87 &   0.00 // 1.87 \\
+         72 &    7151.63 &    0.98 &   8.30 // 10.06 &   43.72 // 22.71 &   0.01 // 6.86 \\
+        120 &    7229.38 &    0.99 &  15.72 // 16.59 &   97.77 // 46.78 &  0.01 // 13.44 \\
+        192 &    7283.78 &    1.00 &  63.21 // 26.35 &  444.42 // 82.55 &  0.06 // 23.17 \\
+        \hline
+        \end{tabular}
+        \caption{8 Worker Threads, $\mu = 7300 / (2*8) = 456 ops/s$}
+    \end{subtable}
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$ &  $\rho$ &         $E[r]$ &        $E[n\_q]$ &        $E[w]$ \\
+        \hline
+          6 &    2577.76 &    0.28 &    3.44 // 2.32 &     0.00 // 0.11 &   0.00 // 0.07 \\
+         18 &    6330.40 &    0.68 &    3.45 // 2.84 &     0.06 // 0.70 &   0.00 // 0.12 \\
+         36 &    7930.72 &    0.85 &    3.65 // 4.53 &     1.68 // 1.58 &   0.00 // 0.38 \\
+         72 &    9159.92 &    0.98 &    9.87 // 7.85 &   58.92 // 11.68 &   0.01 // 3.39 \\
+        120 &    9229.22 &    0.99 &  16.85 // 13.00 &  123.78 // 35.57 &   0.01 // 8.55 \\
+        192 &    9267.70 &    1.00 &  33.68 // 20.71 &  280.22 // 70.90 &  0.03 // 16.13 \\
+        \hline
+        \end{tabular}
+        \caption{16 Worker Threads, $\mu = 9300 / (2*16) = 291 ops/s$}
+    \end{subtable}
+    
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$ &  $\rho$ &         $E[r]$ &        $E[n\_q]$ &        $E[w]$ \\
+        \hline
+          6 &    2596.04 &    0.24 &    5.87 // 2.31 &     0.00 // 0.10 &   0.00 // 0.07 \\
+         18 &    6274.84 &    0.58 &    5.87 // 2.86 &     0.00 // 0.66 &   0.00 // 0.12 \\
+         36 &    7991.58 &    0.73 &    5.88 // 4.50 &     0.03 // 1.67 &   0.00 // 0.21 \\
+         72 &   10070.24 &    0.92 &    6.39 // 7.14 &     5.19 // 3.22 &   0.00 // 0.65 \\
+        120 &   10813.54 &    0.99 &  16.57 // 11.09 &  115.68 // 16.18 &   0.01 // 4.09 \\
+        192 &   10820.80 &    0.99 &  17.63 // 17.74 &  127.20 // 51.73 &  0.01 // 10.68 \\
+        \hline
+        \end{tabular}
+        \caption{32 Worker Threads, $\mu = 10900 / (2*32) = 170 ops/s$}
+    \end{subtable}
+    
+    \begin{subtable}{1.0\linewidth}\centering
+        \begin{tabular}{lrrlll}
+        \hline
+        \# Clients &  $\lambda$ &  $\rho$ &         $E[r]$ &        $E[n\_q]$ &       $E[w]$ \\
+        \hline
+          6 &    2611.63 &    0.21 &   10.16 // 2.29 &     0.00 // 0.10 &  0.00 // 0.07 \\
+         18 &    6262.69 &    0.50 &   10.16 // 2.87 &     0.00 // 0.60 &  0.00 // 0.12 \\
+         36 &    7933.14 &    0.63 &   10.16 // 4.53 &     0.00 // 1.62 &  0.00 // 0.21 \\
+         72 &   10147.69 &    0.81 &   10.16 // 7.09 &     0.05 // 3.13 &  0.00 // 0.34 \\
+        120 &   12036.31 &    0.96 &   11.05 // 9.96 &    10.71 // 4.52 &  0.00 // 0.46 \\
+        192 &   12565.70 &    1.00 &  38.23 // 15.27 &  352.76 // 19.24 &  0.03 // 3.93 \\
+        \hline
+        \end{tabular}
+        \caption{64 Worker Threads, $\mu = 12600 / (2*64) = 98 ops/s$}
+    \end{subtable}
+
+    \caption{System Properties, M/M/m Model. Please note that in the three rightmost columns the values are displayed as $predicted  //  observed$. $E[r]$ is the response time in ms,  $E[n\_q]$ displays the number of requests in the queue and $E[w]$ displays is the queue waiting time in ms.  }
+    \label{MMm}
+\end{table}
+
 \subsection{Network of Queues}
 
-Based on Section 3, build a network of queues which simulates your system. Motivate the design of your network of queues and relate it wherever possible to a component of your system. Motivate your choice of input parameters for the different queues inside the network. Perform a detailed analysis of the utilization of each component and clearly state what the bottleneck of your system is. Explain for which experiments the predictions of the model match and for which they do not.
+
+
+%Based on Section 3, build a network of queues which simulates your system. Motivate the design of your network of queues and relate it wherever possible to a component of your system. Motivate your choice of input parameters for the different queues inside the network. Perform a detailed analysis of the utilization of each component and clearly state what the bottleneck of your system is. Explain for which experiments the predictions of the model match and for which they do not.
 % Q: For Section 7, which exact configuration should I use for network of queues?
 % A: You need to consider both 1 and 2 middleware configuration. You need to analyze both read only and write only workloads. You can set the number of worker threads to the constant that delivers highest throughput.
+
+\begin{figure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/2_1_throughput.eps}
+        \caption{Throughput}
+    \end{subfigure}
+    \begin{subfigure}{.5\textwidth}
+        \includegraphics[width=1\linewidth]{plots/2_1_latency.eps}
+        \caption{Response Time}
+    \end{subfigure}
+    \caption{Baseline without Middleware and one Server}
+    \label{fig:2-1}
+\end{figure}
 
 \end{document}
