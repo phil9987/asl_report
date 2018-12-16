@@ -1037,7 +1037,8 @@ With the model, we predict the expected response time $E[r]$, the expected queue
 
 \autoref{mm1} shows the predicted values of these parameters for 8, 16, 32 and 64 worker threads respectively and for the same number of clients as in \autoref{sec4}. The predicted values were obtained using the described M/M/1 model and the observed values are from \autoref{sec4}.
 \autoref{fig:mm1-RT} shows the predicted response times next to the observed response times. We observe that the predicted response times are too low for 6, 18 and 36 clients and too high for 192 clients. We observe that even thought the predicted values are not close to the measured ones we see a trend that the response time for 64 worker threads is lower than for 8, 16 and 32 worker threads.
-\todo{explain why this model does not model our system very well.}
+\todo{explain why this model does not model our system very well. - model too simplistic. In our model it is not possible that more than numClients requests are in queue, in model this is possible
+}
 
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
@@ -1060,14 +1061,13 @@ With the model, we predict the expected response time $E[r]$, the expected queue
     \caption{M/M/1 predicted and measured Queue Size, Full System, \autoref{sec7.1}}
     \label{fig:mm1-queueLen}
 \end{figure}
-- model too simplistic. In our model it is not possible that more than numClients requests are in queue, in model this is possible
 
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
         \begin{tabular}{lrrlll}
         \hline
-        \# Clients &  $\lambda$&  $\rho$& $E[r]$&        $E[n_q]$& $E[w]$\\
+        \# Clients &  $\lambda$&  $\rho$ & $E[r]$&        $E[n_q]$& $E[w]$\\
         \hline
           6 &    2571.91 &    0.35 &    0.21 // 2.33 &     0.19 // 0.11 &    0.07 // 0.07 \\
          18 &    6093.61 &    0.83 &    0.83 // 2.95 &     4.22 // 0.62 &    0.69 // 0.20 \\
@@ -1082,7 +1082,7 @@ With the model, we predict the expected response time $E[r]$, the expected queue
     \begin{subtable}{1.0\linewidth}\centering
         \begin{tabular}{lrrlll}
         \hline
-        \# Clients &  $\lambda$&  $\rho$& $E[r]$&        $E[n_q]$& $E[w]$\\
+        \# Clients &  $\lambda$&  $\rho$ & $E[r]$&        $E[n_q]$& $E[w]$\\
         \hline
           6 &    2577.76 &    0.28 &    0.15 // 2.32 &     0.11 // 0.11 &    0.04 // 0.07 \\
          18 &    6330.40 &    0.68 &    0.34 // 2.84 &     1.45 // 0.70 &    0.23 // 0.12 \\
@@ -1132,9 +1132,14 @@ With the model, we predict the expected response time $E[r]$, the expected queue
 \end{table}
 
 \subsection{M/M/m} \label{sec7.2}
-
 %Build an M/M/m model based on Section 4, where each middleware worker thread is represented as one service.  Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
+In this section we build a queueing model for each worker thread configuration of the middleware based on \autoref{sec4}. We use an M/M/m model based on \todo{add ref} to model the entire system. Each worker thread in our system is seen as a server and therefore the number of server m in our model is equal to the  number of worker threads inside the middleware. Except for this, the input parameters are the same as for the M/M/1 model described in \autoref{sec7.1}, namely takes the service rate $\mu$ [requests/second] and the arrival rate $\lambda$ [requests/second]. The arrival rate $\lambda$ is set again to the average throughput measured in \autoref{sec4} for a given amount of clients, this assumption is made because we are in a closed system and hence a client only sends a request after it got the response from the previous request. The service rate $\mu$ is set to the maximum measured throughput over all runs of the tested number of clients in \autoref{sec4} divided by $m$ (number of servers in our model = number of worker threads in the system). 
+With the model, we predict the expected response time $E[r]$, the expected queue size $E[n_q]$ and the expected queue waiting time $E[w]$.
 
+\autoref{MMm} shows the predicted values of these parameters for 8, 16, 32 and 64 worker threads respectively and for the same number of clients as in \autoref{sec4}. The predicted values were obtained using the described M/M/m model and the observed values are the ones measured during the experiments of \autoref{sec4}.
+\autoref{fig:mmm-RT} shows the predicted response times next to the observed response times. We observe that compared to the M/M/1 model the response times are now higher for 6, 18 and 36 clients, however they are still not close to the measured values. 
+\todo{explain why this model does not model our system very well. - model assumes a single queue, cannot model well 2 MW case
+}
 
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
@@ -1229,7 +1234,26 @@ With the model, we predict the expected response time $E[r]$, the expected queue
 %Based on Section 3, build a network of queues which simulates your system. Motivate the design of your network of queues and relate it wherever possible to a component of your system. Motivate your choice of input parameters for the different queues inside the network. Perform a detailed analysis of the utilization of each component and clearly state what the bottleneck of your system is. Explain for which experiments the predictions of the model match and for which they do not.
 % Q: For Section 7, which exact configuration should I use for network of queues?
 % A: You need to consider both 1 and 2 middleware configuration. You need to analyze both read only and write only workloads. You can set the number of worker threads to the constant that delivers highest throughput.
-\todo{add data tables and explain choice of parameters}
+Using a network of queues we are able to model our system more accurately. In this section we will explore the setup of 1 middleware and 2 middlewares as well as read-only and write-only workload. We will compare the results to the measurements of \autoref{sec3.1} and \autoref{sec3.2}. The network of queues allows us to use load dependent service times and to model a closed system, which should lead to more accurate predictions.
+\subsubsection{One Middleware}
+\autoref{fig:7-3:1MW} shows our network of queues model for 1 middleware. We model the network latency as an $M/M/\infty$ center, the network thread as an M/M/1 center and the worker threads together with the servers as an M/M/m center with $m$ equal to the number of worker threads in the system. We decided to model the worker threads together with the servers because we observed in sections 3.1, 3.2 and 4 that the response time is dominated by the server service time as long as the system is under-saturated. In the saturated phase the queueing time starts to become the dominating part in the middleware response time, for the network of queues model we only need to enter the server service time, because the queueing time will be predicted by the model. Furthermore we observed that the server service time is the same for every worker thread, which means that the model as described in \autoref{fig:7-3:1MW} should be able to model our system up to a reasonable accuracy. To predict the values the implementation for Octave \todo{add reference to https://www.moreno.marzolla.name/software/queueing/} has been used with an extension for queueing models. The parameters $m_i$ defines the number of servers per center. As described above we set it to 0 for the $M/M/\infty$ center, to 1 for the M/M/1 center and to 'number of worker threads' for the M/M/m center.
+The $\mu_i$ parameters define the service time per center. For the $M/M/\infty$ center we set $\mu_i$ to 0.001s which is approximately the average network roundtrip time between clients and middlewares we measured during the experiments in section 3. For the M/M/1 center we set $\mu_i$ to 0.00001s which is approximately the average time a request spent in the network thread in the middleware.
+For the M/M/m model we used a load dependent service time which we set to the measured average server service time in \autoref{sec3.1}.
+
+\autoref{Table:NetworkOfQueues} (a) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. 
+\autoref{Table:NetworkOfQueues} (b) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. 
+\todo{add measured values to tables and compare them}
+
+
+\subsubsection{Two Middlewares}
+\autoref{fig:7-3:2MW} shows our network of queues model for 2 middlewares. The only difference compared to the queueing model with 1 middleware is, that there are now 2 M/M/1 centers and 2 M/M/m centers which correspond to 1 middleware each. The parameters $m_i$ define the number of servers per center. We again set $m_i$ to 0 for the $M/M/\infty$ center, to 1 for the M/M/1 center and to 'number of worker threads' for the M/M/m centers.
+The $\mu_i$ parameters define the service time per center. For the $M/M/\infty$ center we set $\mu_i$ to 0.001s which is approximately the average network roundtrip time between clients and middlewares that were measured during the experiments in section 3. For the M/M/1 center we set $\mu_i$ to 0.00001s which is approximately the average time a request spent in the network thread in the middleware.
+For the M/M/m model we used a load dependent service time which we set to the measured average server service time in \autoref{sec3.2}.
+
+\autoref{Table:NetworkOfQueues} (c) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. 
+\autoref{Table:NetworkOfQueues} (d) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. 
+\todo{add measured values to tables and compare them}
+
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
         \begin{tabular}{lllllll}
@@ -1242,7 +1266,7 @@ With the model, we predict the expected response time $E[r]$, the expected queue
         Utilization & 0.05 & 0.18 & 0.46 & 0.93 & 0.34 & NA\\
         \hline
         \end{tabular}
-    \caption{1 Middleware, Write-Only}
+    \caption{1 Middleware, Write-Only, 64 Worker Threads per Middleware}
     \end{subtable}
     
     \begin{subtable}{1.0\linewidth}\centering
@@ -1256,7 +1280,7 @@ With the model, we predict the expected response time $E[r]$, the expected queue
         Utilization & 0.37 & 0.97 & 1 & 1 & 1 & 1 & NA\\
         \hline
         \end{tabular}
-    \caption{1 Middleware, Read-Only}
+    \caption{1 Middleware, Read-Only, 8 Worker Threads per Middleware }
     \end{subtable}
     
     \begin{subtable}{1.0\linewidth}\centering
@@ -1270,7 +1294,7 @@ With the model, we predict the expected response time $E[r]$, the expected queue
         Utilization & 0.03 & 0.09 & 0.21 & 0.84 & 0.94 & NA\\
         \hline
         \end{tabular}
-    \caption{2 Middlewares, Write-Only}
+    \caption{2 Middlewares, Write-Only, 64 Worker Threads per Middleware}
     \end{subtable}
     
     \begin{subtable}{1.0\linewidth}\centering
@@ -1284,7 +1308,7 @@ With the model, we predict the expected response time $E[r]$, the expected queue
         Utilization & 0.18 & 0.55 & 0.84 & 0.91 & 0.94 & 0.95 & NA\\
         \hline
         \end{tabular}
-    \caption{2 Middlewares, Read-Only}
+    \caption{2 Middlewares, Read-Only, 8 Worker Threads per Middleware}
     \end{subtable}
     \caption{Predicted values of Network of Queues}
     \label{Table:NetworkOfQueues}
