@@ -758,6 +758,13 @@ The results in this section are based on the aggregated request logs from the tw
 
 \subsubsection{Explanation}
 %Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+In the sharded mode, each GET request is split into 3 parts for 3 or more keys and requested from each server. With the same explanation as in \autoref{sec4} we expect a higher server service time because the way the middleware is constructed it has to wait until it received a response from all servers. However, the overhead is much smaller, because unlike in the case of replication, the sum of the amount of data sent to the server remains almost, except for some overhead for the different TCP packages, the same.
+For the sharded mode we observe that the response time measured at the client remains almost the same for 1 and 3 keys. For 1,3,6,9 keys we measured an average throughput of 3k, 7.5k, 8.7k and 8.8k requests per second respectively. These numbers have been normalized, meaning the measured throughput for 3 keys has been multiplied by 3, for 6 keys by 6 and for 9 keys by 9.
+The configuration at hand is, with the only difference that there are 3 servers, the same as the one in \autoref{sec3.2}, where we measured a maximum throughput of 2935 requests per second for read-only workload. For 3 servers we expect the throughput to increase by a factor of 3 because the limiting factor in \autoref{sec3.2} has been identified as the network upload capacity at the server. So the maximum reachable throughput is expected to be no higher than 8.8k requests per second.
+We notice that for 6 keys the maximum throughput of 8.8k requests per second is almost reached and for 9 keys it is reached.\todo{add dstat table for 6 and 12 keys and refer to it, show server upload bottleneck.}
+The average response time as well as the percentiles displayed in \autoref{fig:5-latencyPercentiles} (a) remain almost the same for 1 and 3 keys because the system is still under-saturated. Also, because the middlewares operate in sharded mode, the servers have to handle only single key requests as the 3 key requests are split up into three single key requests.
+For 6 keys per request the system almost reaches its saturation phase, with the bottleneck being the server network upload capacity. The servers now have to handle 2 key requests because the middlewares split every 6 key request into 3 requests with 2 keys each.
+
 
 
 \subsection{Non-sharded Case} \label{sec5.2}
@@ -788,13 +795,20 @@ The results in this section are based on the aggregated request logs from the tw
 \subsubsection{Explanation}
 
 %Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
+In nonsharded mode, each middleware sends the whole (MULTI)GET request to one memcached server. Furthermore the middleware assures load balancing by iterating through the servers for each worker thread.
+For the non-sharded mode we observe that the response time measured at the client remains almost the same for 1 and 3 keys. For 1,3,6,9 keys we measured an average throughput of 3k, 7.6k, 8.7k and 8.9k requests per second respectively. These numbers have been normalized, meaning the measured throughput for 3 keys has been multiplied by 3, for 6 keys by 6 and for 9 keys by 9.
+Like in the sharded case, the configuration at hand is, with the only difference that there are 3 servers, the same as the one in \autoref{sec3.2}, where we measured a maximum throughput of 2935 requests per second for read-only workload. For 3 servers we expect the throughput to increase by a factor of 3 because the limiting factor in \autoref{sec3.2} has been identified as the network upload capacity at the server. So the maximum reachable throughput is expected to be no higher than 8.8k requests per second.
+We notice that for 6 keys the maximum throughput of 8.8k requests per second is almost reached and for 9 keys it is reached.\todo{add dstat table for 6 and 12 keys and refer to it, show server upload bottleneck.}
+The average response time as well as the percentiles displayed in \autoref{fig:5-latencyPercentiles} (b) remain almost the same for 1 and 3 keys because the system is still under-saturated. We notice here that the response times for 1 and 3 keys do not differ significantly compared to the sharded case
+For 6 keys per request the system almost reaches its saturation phase, with the bottleneck being the server network upload capacity. Even though the servers have to handle 3 times larger keys compared to the sharded case, the average response time is almost the same. However, the 50th, 90th and 99th percentiles are much higher for the sharded case for both 6 and 9 keys. This indicates that the system is less stable for a higher number of keys in multiget requests. The reason for this could be the larger network packages due to the higher number of keys per request in the non-sharded mode.
 \todo{elaborate on non-sharded histograms and percentiles}
 
 \subsection{Histogram}
 %For the case with 6 keys inside the multi-get, display four histograms representing the sharded and non-sharded response time distribution, both as measured on the client, and inside the middleware. Choose the bucket size in the same way for all four, and such that there are at least 10 buckets on each of the graphs.
-\autoref{fig:5-1:Histograms} shows histograms for both memtier and middleware both for a sharded and a non-sharded configuration. The histograms were generated using the data from \autoref{sec5.1} and \autoref{sec5.2} for the configuration of memtier where 6 key MULTIGET requests were sent. For sharded and non-sharded independently we observe a shift from memtier to middleware, namely the histogram of the middleware is shifted 1 bucket to the right, meaning the response times measured at the client are around 1ms longer. This can be explained with the additional round-trip time of each request from client to middleware. The middleware measures its response time from the arrival of the request until before it is returned to the client, so we expect the response time to be 1 round-trip time off compared to the response time measured at the client. Looking at the histogram and the mean ping time of 1ms this hypothesis is confirmed.
-\todo{further explain differences between sharded vs non-sharded }
+\autoref{fig:5-1:Histograms} shows histograms for both memtier and middleware both for a sharded and a non-sharded configuration. The histograms were generated using the data from \autoref{sec5.1} and \autoref{sec5.2} for the configuration of memtier where 6 key MULTIGET requests were sent. As a sanity check the number of requests per bucket were summed up for both sharded and non-sharded, compared and found to be equal with very small differences due to rounding of the values gathered from the memtier output.
+For sharded and non-sharded independently we observe a shift from memtier to middleware, namely the histogram of the middleware is shifted 1 bucket to the right, meaning the response times measured at the client are around 1ms longer. This can be explained with the additional round-trip time of each request from client to middleware. The middleware measures its response time from the arrival of the request until before it is returned to the client, so we expect the response time to be 1 round-trip time off compared to the response time measured at the client. Looking at the histogram and the mean ping time of 1ms our hypothesis is confirmed.
 
+Furthermore, the sharded histograms we observe larger buckets for higher response times. This can be explained with reference to the way the middleware handles sharded multiget requests. For sharded multiget requests the middleware splits the request into equally sized parts (if, like in the case at hand, the number of keys is divisible by the number of servers), sends one part after another to each server and then waits for an answer from each server. Similar as in \autoref{sec3.2} server service time is now at least the service time of the slowest server for every request while in the non-sharded case, in average, only every third request is sent to the slowest (or furthest) away memcached server. \todo{add ping times to show difference between server latencies, explain why this is the main factor of the service time}
 
 
 \begin{figure}
@@ -821,9 +835,13 @@ The results in this section are based on the aggregated request logs from the tw
 
 \subsection{Summary}
 
-Provide a detailed comparison of the sharded and non-shareded modes. For which multi-GET size is sharding the preferred option? Provide a detailed analysis of your system. Add any additional figures and experiments that help you illustrate your point and support your claims.
+%Provide a detailed comparison of the sharded and non-shareded modes. For which multi-GET size is sharding the preferred option? Provide a detailed analysis of your system. Add any additional figures and experiments that help you illustrate your point and support your claims.
+The percentiles and response times plot displayed in \autoref{fig:5-latencyPercentiles} suggests that in sharded mode we have significantly less outliers for 6 as well as for 9 keys, which means the system provides more often a similar response time in the sharded mode for these key sizes. For 1 and 3 keys we could not observe a difference between sharded and non-sharded mode and hence suggest to choose non-sharded mode for these key-sizes.
+
+For sharded and non-sharded independently we observe a shift from memtier to middleware, namely the histogram of the middleware is shifted 1 bucket to the right, meaning the response times measured at the client are around 1ms longer. This is due to the additional round-trip time of each request from client to middleware. While the middleware measures its response time from the arrival of the request until before it is returned to the client, the client has in addition the round trip time from middleware to client in its response time. The histograms displayed in \autoref{fig:5-1:Histograms} and the aggregated mean ping time between clients and middlewares of 1ms confirm our hypothesis.
 
 \section{2K Analysis (90 pts)}
+%Repeat the experiment for (a)~a write-only and (b)~a read-only workload. For each of the two workloads, what is the impact of these parameters on throughput, respectively response time?
 
 In this section, a 2k analysis for k=3 is being performed. With this, the impact of the number of memcached servers, the number of worker threads and the number of middlewares (as well as any combination of these) on throughput and response time is derived. The following parameter choices are being investigated:
 
@@ -835,8 +853,8 @@ In this section, a 2k analysis for k=3 is being performed. With this, the impact
 	      	      
 \end{itemize}
 
-Repeat the experiment for (a)~a write-only and (b)~a read-only workload.
-For each of the two workloads, what is the impact of these parameters on throughput, respectively response time?
+For the 2k analysis the parameters will be set to -1 for the first choice and 1 for the second choice.
+
 
 \begin{center}
 	\scriptsize{
@@ -855,13 +873,13 @@ For each of the two workloads, what is the impact of these parameters on through
 	} 
 \end{center}
 
-\subsection{Read-only Workload}
+\subsection{Read-only Workload}\label{sec6.1}
 
-\autoref{2k:read-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a read-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed.
-- clearly, server is bottleneck. dstat confirms this assumption as well, 12.5MB/S avg upload per server
-- throughput and response time must be in close relationship. It is expected that factors that strongly influence throughput inversely influence response time in an equally strong way.
-- refer to section 2 / 3
-\todo{compactify, just mention the effect and allocation of Variance. See example from Valentin}
+\autoref{2k:read-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a read-only workload. The additive 2k factorial design has been used because based on the experiments of the previous sections, for read-only workload, no multiplicative effects are expected between the tested parameters.
+The results in this section are based on the aggregated request logs from the one or two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. For this section the error has been calculated as the sum of squared standard deviation errors over all 3 runs. The configurations examined for this section are shown in \autoref{exp4}.
+
+\autoref{2k:read-only} (b) shows the allocation of variance per parameter for the throughput and we observe that $x_b$, the number of memcached servers, is with close to 100\% the only dominating factor for the throughput of the system for read-only workload. In \autoref{2k:read-only} (a) we see that $q_b$, the effect size of $x_b$, is positive, which leads us to the conclusion that more servers lead to a higher throughput. In section 2 we measured for read-only throughput an increase of factor 2 when having 2 instead of 1 servers. We also observed in section 2 that for read-only workload the outgoing network capacity of the memcached server is the bottleneck. Therefore we notice in this 2k analysis that for read-only workload the main factor which positively affects the throughput is the number of servers. This is because each server leads to a throughput increase of roughly 3k requests per second.
+Furthermore we notice that throughput and response time must be in close relationship. We expect that factors which strongly influence throughput, inversely influence response time in an equally strong way. This is confirmed when looking at \autoref{2k:read-only} (c) and (d) where we again observe the allocation of variance for $x_b$ close to 100\% but this time the effect size with a negative value.
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
@@ -930,12 +948,15 @@ For each of the two workloads, what is the impact of these parameters on through
     \label{2k:read-only}
 \end{table}
 
-\subsection{Write-only Workload}
-\autoref{2k:write-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a write-only workload. The additive 2k factorial design has been used because no multiplicative effects have been observed. We observe that for write-only workload $x_a$, the number of worker threads has the most significant effect on the system followed by the number of middlewares $x_c$. This aligns with the observations in sections 3 and 4 for write-only workload where we observed that the middleware is the bottleneck due to too few worker threads. The reason for $x_a$ having a significantly higher allocation of variance in comparison to $x_c$ is, that the number of worker threads is increased by a factor of 4 with $x_a$ while it is only doubled with $x_c$.
+\subsection{Write-only Workload}\label{sec6.2}
+\autoref{2k:write-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a write-only workload. The additive 2k factorial design has been used because only between $x_a$, the number of worker threads, and $x_c$, the number of middlewares we expect a multiplicative effect. This is because having 2 middlewares will double the total amount of worker threads in the system as we have observed in \autoref{sec3.2}, therefore having 32 worker threads and 2 middlewares will actually result in 64 worker threads in total and we have observed in sections 3 and 4 that for write-only workload the middleware is the bottleneck until 128 worker threads in total.
+
+\autoref{2k:write-only} shows that for write-only workload $x_a$, the number of worker threads has the most significant effect on the system followed by the number of middlewares $x_c$. This aligns with the observations in sections 3 and 4 for write-only workload where we observed that the middleware is the bottleneck due to too few worker threads. The reason for $x_a$ having a significantly higher allocation of variance in comparison to $x_c$ is, that the number of worker threads is increased by a factor of 4 with $x_a$ while it is only doubled with $x_c$. As mentioned before we would expect here a multiplicative effect, if we have 32 worker threads and 2 middlewares but this effect is not shown by our 2k analysis because we chose to use the additive model.
 The number of memcached servers, $x_b$, has the lowest effect for write-only workload and the effect on the throughput is negative, meaning increasing the amount of servers from 1 to 3 actually leads to a decrease of throughput and an increase of latency. 
-As we have seen in previous chapters \todo{be more specific here}, the decrease of throughput for write-only workload can be explained with reference to the implementation of the middleware. The middleware sends SET requests to each memcached server and responses are received from each server one by one. Besides the sending and receiving, the main difference in response time comes from the dependence on the slowest server response time. \todo{name concrete values here}.
+As we have seen in \autoref{sec4}, the decrease of throughput for write-only workload can be explained with reference to the implementation of the middleware. The middleware sends SET requests to each memcached server and responses are received from each server one by one. Besides the sending and receiving, the main difference in response time comes from the dependence on the slowest server response time.
+
+As in \autoref{sec6.1} we also expect here that factors which strongly influence throughput, inversely influence response time in an equally strong way. This is confirmed when looking at \autoref{2k:write-only} (c) and (d) where we again observe similar allocation of variances for for all 3 variables but with negated effect sizes compared to the throughput effect sizes.
 %This makes sense because for write-only workload the servers do not need to send massive amounts of data but only receive and store. The bottleneck this time lies in the middleware, where we can even observe the maximum outgoing link capacity of 100MB/s being reached for the configuration with 1 middleware and 3 servers.
-\todo{mention other chapters, link to chaper 2/3/4}
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
@@ -1010,8 +1031,12 @@ As we have seen in previous chapters \todo{be more specific here}, the decrease 
 Note that for queuing models it is enough to use the experimental results from the previous sections. It is, however, possible that the numbers you need are not only the ones in the figures we asked for, but also the internal measurements that you have obtained through instrumentation of your middleware.
 
 \subsection{M/M/1} \label{sec7.1}
-
 %Build queuing model based on Section 4 (write-only throughput) for each worker-thread configuration of the middleware. Use one M/M/1 queue to model your entire system. Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
+In this section we build a queueing model for each worker thread configuration of the middleware based on \autoref{sec4}. We use an M/M/1 model based on \todo{add ref} to model the entire system. This model assumes a single server (in our case the middleware) with an infinite buffer (in our case queue) with first-come-first-serve policy. As input parameters our model takes the service rate $\mu$ [requests/second] and the arrival rate $\lambda$ [requests/second]. The service rate $\mu$ we approximate by taking the maximum measured throughput over all runs of the tested number of clients of \autoref{sec4}. The arrival rate $\lambda$ is set to the average throughput measured in \autoref{sec4} for a given amount of clients, this assumption is made because we are in a closed system.
+With the model, we predict the expected response time $E[r]$, the expected queue size $E[n\_q}$ and the expected queue waiting time $E[w]$.
+
+\autoref{mm1} shows the predicted values, which were obtained with help of the described M/M/1 model, as well as the observed values from \autoref{sec4}.
+
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/7_MM1_ResponseTimePredicted.eps}
