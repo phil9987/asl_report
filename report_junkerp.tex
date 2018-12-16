@@ -77,7 +77,7 @@ The request structure, which is being discussed in more detail in the next parag
 \subsection{Request Parsing}
 % Explain how messages are parsed 
 Requests might arrive in multiple packets and therefore might not be complete within a single socket read operation.
-To make sure only complete requests are forwardet to the worker threads, the networker thread maintains a single request structure per connection into which incoming data is buffered until the request is complete.
+To make sure only complete requests are forwarded to the worker threads, the networker thread maintains a single request structure per connection into which incoming data is buffered until the request is complete.
 A single request structure per connection is sufficient because the system is closed, meaning clients wait until their previous request has been answered before sending the next one.
 This design choice leads to a minimum number of request object allocations and because request objects are being reused the garbage collector is only needed on system shutdown.
 Because of the closedness of the system no synchronization on the request object is necessary, even though it is being shared between networker and worker thread, as long as the worker never uses the object after the response has been sent to the client.
@@ -97,11 +97,11 @@ Each worker thread continuously reads blockingly from the queue in its run metho
 Once it gets a request, it parses its type and then chooses the correct function to handle it (handleGet, handleMultiget, handleSet).
 In case sharded mode is deactivated, handleMultiget is equivalent to handleGet.
 Get and non-sharded multiget requests are load balanced among all connected memcached servers using a round-robin scheme.
-To avoid a shared token amongst the workers, each worker maintains its own counter which is initialized by the main thread in a way that the worker threads are spread out evenly among the servers and vice versa.
+To avoid a shared token among the workers, each worker maintains its own counter which is initialized by the main thread in a way that the worker threads are spread out evenly among the servers and vice versa.
 Whenever a worker thread wants to access a server it uses the current counter value modulo the number of memcached server is used as an index to a list storing the server connections.
 On every balanced operation, the worker increases its counter.
-In expectation, this guarantees an even distribution of load, whitout incurring any coordination or hashing overhead.
-Sharded multiget requests are balanced similarly. In this setting a worker thread splits the keys into equally sized portions and sents each portion to one server, starting with its current round-robin index.
+In expectation, this guarantees an even distribution of load, without incurring any coordination or hashing overhead.
+Sharded multiget requests are balanced similarly. In this setting a worker thread splits the keys into equally sized portions and sends each portion to one server, starting with its current round-robin index.
 Because the sharding scheme is a simple division, this leads to one server receiving one key more or less than the others.
 In expectation, this imbalance is avoided by choosing the starting server using the round-robin scheme and increasing the current round-robin index afterwards by the number of servers used.
 Each worker thread communicates blockingly with each server by sending requests and receiving responses one after another.
@@ -117,7 +117,7 @@ This meta data is used to log statistics about the processed requests.
 The middleware logs into two files using the log4j2 library, one file for errors and one for aggregated request statistics.
 The error file is synchronized, in order to not lose information in case of a crash.
 The requests file is buffered and only flushed to file at the shutdown of the system if the buffer limit of 10MB is not reached (for the experiments taken for this report, the file has always been flushed at shutdown).
-According to the log4j2 documentation, its file appenders are synchronized and hence safe to use in a multi thread environment like the one presented here (with multiple worker threads logging infos about threads possibly simultaneously).
+According to the log4j2 documentation, its file appenders are synchronized and hence safe to use in a multi thread environment like the one presented here (with multiple worker threads logging information about threads possibly simultaneously).
 
 \subsection{Aggregation of Requests}
 In order to avoid massive amounts of log data I decided to do a lightweight aggregation inside my middleware.
@@ -125,16 +125,16 @@ Every worker thread receives the same starting timestamp as well as the desired 
 Whenever a request is finished for a worker thread, it hands the request object to its AggregationLogger.
 The AggregationLogger checks if the request timestamp at hand is in the current time window.
 If that's the case, the AggregationLogger will add the meta data of the request at hand to its sums.
-If not, it will write the aggregated data of the current time window and set the new period start time such that the request timestamp is in the curren time window (this is done by increasing the current start time by the desired granularity, e.g. 1s).
+If not, it will write the aggregated data of the current time window and set the new period start time such that the request timestamp is in the current time window (this is done by increasing the current start time by the desired granularity, e.g. 1s).
 The AggregationLogger only writes sums to the log, which means there are no errors in the aggregation data from e.g. division.
 In the aggregated log data there is one entry per second for every worker.
 To merge this data into one entry per second, the python script 'postprocessing.py' is used.
 
 \subsection{Preparation of Data}
 To account for the startup and the cooldown phase, the first 3 seconds and the last 3 seconds of each log were dropped, to account for warmup and cooldown phase respectively.
-These durations were empirically determined by looking plots showing the performance of the middleware over time for various configurations.
+These times were empirically determined by looking plots showing the performance of the middleware over time for various configurations.
 All aggregation windows are then aggregated into an overall per-run aggregate.
-For experiments with multiple middlewares, the log files of the middlewares are aggregated (using 'postprocessing.py') before creating the overall per-run aggregate.
+For experiments with multiple middlewares and clients, the log files of the middlewares and the memtier clients are aggregated (using 'postprocessing\_memtier.py' which calls the script for the middleware postprocessing) before creating the overall per-run aggregate.
 This is done for all three runs of each experiment, then averages and standard deviation are calculated.
 The results are then stored in the $aggregated_avg$ directory from which plots were generated.
 The chosen aggregation approach discards information about standard deviations on the 1 second window of the aggregated log.
@@ -199,12 +199,10 @@ In this section, the maximum capacity of a single memcached server is examined. 
 
 \subsubsection{Explanation}
 %Describe in which phase the memcached servers are under-saturated, saturated, or over-saturated. Describe how throughput and response time correlate. Explain what further conclusions can be drawn from the experiment.
-For read-only workload, the large value size of 4096 bytes causes GET responses to fully exhaust the outgoing capacity of the server's network link, while the CPU remains underutilized. Clearly, the bottleneck in this case is the network upload capacity of the single memcached server. The collected dstat data shows an average upload of 12.41MB/s already for the first configuration with 6 virtual clients in total (see \autoref{dstat:2-1}). Because this value is very close to the maximum outgoing link capacity of the server machines shown in \autoref{link-caps}, which was measured using $iperf$, we can conclude that this indeed is the bottleneck in this system for read-only workload. The system is already with 6 virtual clients saturated because of the above mentioned bottleneck. No under- and over-saturation of the system has been observed for read-only workload.
+For read-only workload, the large value size of 4096 bytes causes GET responses to fully exhaust the outgoing capacity of the server's network link, while the CPU remains underutilized. Clearly, the bottleneck in this case is the network upload capacity of the single memcached server. The collected dstat data shows an average upload of 12.41MB/s already for the first configuration with 6 clients (see \autoref{dstat:2-1}). Because this value is very close to the maximum outgoing link capacity of the server machines shown in \autoref{link-caps}, which was measured using iperf, we can conclude that this indeed is the bottleneck in this system for read-only workload. The system is already with 6 clients saturated because of the above mentioned bottleneck. No under- and over-saturation of the system has been observed for read-only workload.
 
-For write-only workload, the request size is large compared to the server response. The outgoing link capacity of the server should therefore not be the problem anymore. And indeed, this time outgoing network activities for both client and server machines stay within their outgoing link capacities. However, for the memcached server a CPU utilization of 96\% has been measured for 32 virtual clients per thread as shown in \autoref{dstat:2-1}. Clearly, the  bottleneck for the write-only workload is CPU bound on the memcached server side which implies that further increasing the number of virtual clients will not lead to a higher throughput and might put the system into an over-saturated state.
-Up until 120 virtual clients in total the system  is under-saturated because we observe an increase of throughput with a higher amount of virtual clients until this point. After that point the system is in the saturation phase where the throughput stays the same while the response time increases linearly with more virtual clients.
-
-The over-saturated phase has not been reached for both read and write-only during the experiments, this conclusion comes from the fact that only a linear increase of response time has been observed for an increasing amount of clients and that the throughput did not decrease.
+For write-only workload, the request size is large compared to the server response. The outgoing link capacity of the server should therefore not be the problem anymore. And indeed, this time outgoing network activities for both client and server machines stay within their outgoing link capacities. However, for the memcached server a CPU utilization of over 93\% has been measured for 120 clients as shown in \autoref{dstat:2-1}. Clearly, the  bottleneck for the write-only workload is CPU bound on the memcached server side which implies that further increasing the number clients will not lead to a higher throughput and might put the system into an over-saturated state.
+Up until 120 clients the system is under-saturated because we observe an increase of throughput with a higher number of clients until this point. After that point the system is saturated because the throughput stays the same while the response time increases linearly with more clients. No over-saturation of the system has been observed for write-only workload.
 
 \begin{center}
     \begin{table}
@@ -222,7 +220,7 @@ The over-saturated phase has not been reached for both read and write-only durin
 \end{center}
 
 \subsection{Two Servers} \label{sec2.2}
-In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of the two memtier threads. As before, the number of clients represents the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations of the experiment are shown in table \autoref{exp2-2}.
+In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of the two memtier threads. As before, the number of clients represents the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations of the experiment are shown in table \autoref{exp2-2}.
 
 \begin{table}
     \centering
@@ -257,11 +255,11 @@ In this section, the maximum load generation capacity of a single memtier instan
 
 %Describe how this experiment compares to the previous section. Which results are the same and which ones differ? Explain what further conclusions can be drawn from the experiment.
 
-For read-only workload the system is under-saturated up until 8 virtual clients in total. This is derived from the fact that the throughput is increasing significantly while the response time remains almost constant (see \autoref{fig:2-2}). From 8 virtual clients on, the throughput does not increase anymore while the response time continues to increase linearly. On the response time plot a knee is clearly visible at 6 virtual clients. We identified the start of the saturation phase at 8 virtual clients because of the throughput graph which increases by over 500 requests per second from 6 to 8 clients with only a small increase in latency. From this point on the system is saturated.
-The bottleneck for read-only workload is, as in \autoref{sec2.1}, at the outgoing network capacity of the server. As can be seen in \autoref{dstat:2-2} the server reaches an average outgoing network traffic of 12.45MB/s for 8 virtual memtier clients in total. This is very close to the maximum outgoing network capacity of the server machines (12.6MB/s) listed in \autoref{link-caps}. Therefore, the system is saturated from 8 virtual memtier clients on. Before this point, the system is under-saturated for read-only workload.  An over-saturation has not been observed during the experiment. 
+For read-only workload the system is under-saturated until 8 clients. This is derived from the fact that the throughput is increasing significantly while the response time remains almost constant (see \autoref{fig:2-2}). From 8 clients on, the throughput does not increase anymore while the response time continues to increase linearly. No over-saturation has been observed during the experiment. On the response time plot a knee is clearly visible at 6 clients. We identified the start of the saturation phase at 8 clients because of the throughput graph which increases by over 500 requests per second from 6 to 8 clients with only a small increase in latency. From this point on the system is saturated.
+The bottleneck for read-only workload is, as in \autoref{sec2.1}, at the outgoing network capacity of the server. As can be seen in \autoref{dstat:2-2} the server reaches an average outgoing network traffic of 12.45MB/s for 8 clients. This is very close to the maximum outgoing network capacity of the server machines (12.6MB/s) listed in \autoref{link-caps}.
 
-For write-only workload the system is under-saturated up until 6 virtual clients in total. This is derived from the fact that throughput is increasing significantly while the response time remains almost constant (see \autoref{fig:2-2}). From 6 virtual clients on, the throughput does not increase anymore while the response time continues to increase linearly. This time we observe the knee in the response time graph of \autoref{fig:2-2} at 6 virtual clients and it aligns well with the throughput which reaches its peak there as well. From this point on, the system is saturated.
-The bottleneck for write-only workload has been identified at the outgoing network capacity of the single memtier client. As shown in \autoref{dstat:2-2} the client reaches an average outgoing network traffic of 24.66MB/s for 6 virtual memtier clients in total. This is very close to the maximum outgoing network capacity of the client machines (25.1MB/s) presented in \autoref{link-caps}. Before this point the system is under-saturated. An over-saturation has not been observed during the experiment.
+For write-only workload the system is under-saturated up until 6 clients. This is derived from the fact that throughput is increasing significantly while the response time remains almost constant (see \autoref{fig:2-2}). From 6 clients on, the throughput does not increase anymore while the response time continues to increase linearly. This time we observe the knee in the response time graph of \autoref{fig:2-2} at 6 clients and it aligns well with the throughput which reaches its peak there as well. From this point on, the system is saturated. No over-saturation has been observed during the experiment.
+The bottleneck for write-only workload has been identified at the outgoing network capacity of the single memtier client. As shown in \autoref{dstat:2-2} the client reaches an average outgoing network traffic of 24.66MB/s for 6 clients. This is very close to the maximum outgoing network capacity of the client machines (25.1MB/s) presented in \autoref{link-caps}.
 
 \begin{center}
     \begin{table}
@@ -282,23 +280,22 @@ The bottleneck for write-only workload has been identified at the outgoing netwo
 
 \subsection{Summary}
 %Write at least two paragraphs about how both results relate. Describe what is the bottleneck of this setup is. If the maximum throughput for both experiments is the same, explain why. If it is not the case, explain why not. Write down key take-away messages about the behaviour of the memtier clients and the memcached servers.
-This section is concluded by presenting the maximum throughput measured during the experiments in \autoref{sec2res}. The configurations at which the maximum throughput has been identified is stated in the last column. As explained before, it is the configuration from which on no significant increase in throughput has been observed and at which the response time is still reasonably low compared to a lower amounts of virtual clients.
+This section is concluded by presenting the maximum throughput measured during the experiments in \autoref{sec2res}. The configurations at which the maximum throughput has been identified is stated in the last column. As explained before, it is at the beginning of the saturation phase.
 
-For one memcached server and read-only workload the bottleneck is the network upload capacity of the single memcached server which is exhausted already with 6 virtual clients.
-For one memcached server and write-only workload the bottleneck the CPU of the memcached server, which has been measured at 96\% in average for 120 virtual clients.
-For one load generating VM and read-only workload the bottleneck is again the network upload capacity of the memcached servers, measurements of dstat show that the network upload of both servers is in average 12.47MB/s with 8 virtual clients in total. Compared to the read-only experiment with a single memcached server in \autoref{sec2.1} we observe a maximum throughput which is double as high. This is expected and makes sense because in this experiment we now have 2 memcached servers and because the bottleneck is the upload capacity a throughput increase of factor 2 is observed.
-For one load generating VM and write-only workload the bottleneck is on the client side where an average network upload of 24.8MB/s has been measured for 12 virtual clients. This is the reason why the maximum throughput measured in \autoref{sec2.1} for write-only workload is not being reached here, because the single load generating VM cannot generate more load due to its maximum network upload capacity.
+For one memcached server and read-only workload the bottleneck is the network upload capacity of the single memcached server which is exhausted already with 6 clients.
+For one memcached server and write-only workload the bottleneck is the CPU of the memcached server, which has been measured at 96\% in average for 120 clients.
+For one load generating VM and read-only workload the bottleneck is again the network upload capacity of the memcached servers, measurements of dstat show that the network upload of both servers is in average 12.47MB/s with 8 clients. Compared to the read-only experiment with a single memcached server in \autoref{sec2.1} we observe a maximum throughput which is double as high. This is expected and makes sense because in this experiment we now have 2 memcached servers and because the bottleneck is the upload capacity a throughput increase of factor 2 is observed.
+For one load generating VM and write-only workload the bottleneck is on the client side where an average network upload of 24.8MB/s has been measured for 12 clients. This is the reason why the maximum throughput measured in \autoref{sec2.1} for write-only workload is not being reached here, because the single load generating VM cannot generate more load due to its maximum network upload capacity.
 
-If we compare read-only and write only workload we observe response time which is over 5x higher for read-only workload compared to write-only workload. This can be explained with the more intense work the server has to perform for GET requests, where it has to search the matching entry before it can upload the 4096B data package to the network. For SET requests on the other hand it can immediately send back a short response and handle the storing of the new value in the background.
-
+If we compare read-only and write only workload we observe response time which is over 5x higher for read-only workload compared to write-only workload. Our hypothesis is, that this is due to network congestion at the network interface of the server for read-only workload.
 
 
 \begin{center}
 \begin{table}
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{7cm}|}
 		\hline                        & Read-only workload [req/s] & Write-only workload [req/s] & Configuration gives max. throughput \\ 
-		\hline One memcached server   &          2937          &      14791               &            read-only: 6 virtual clients \newline write-only: 120 virtual clients                         \\ 
-		\hline One load generating VM &        5847            &          5943           &         read-only: 8 virtual clients \newline write-only: 6 virtual clients                            \\ 
+		\hline One memcached server   &          2937          &      14791               &            read-only: 6 clients \newline write-only: 120 clients                         \\ 
+		\hline One load generating VM &        5847            &          5943           &         read-only: 8 clients \newline write-only: 6 clients                            \\ 
 		\hline 
 	\end{tabular}
 	\caption{Maximum throughput of different VMs.}
@@ -311,7 +308,7 @@ If we compare read-only and write only workload we observe response time which i
 \section{Baseline with Middleware (90 pts)}
 
 \subsection{One Middleware} \label{sec3.1}
-After establishing baselines for memtier clients and memcached servers in \autoref{section2}, this section analyzes how adding my middleware to the system affects the preformance. Due to the additional network hops from client to middleware and from middleware to server it is unavoidable that some additional latency is introduced. The middleware is designed to hide this latency with parallelism using its worker threads and, given a sufficient amount of parallelism, avoid becoming the bottleneck of the system.
+After establishing baselines for clients and memcached servers in \autoref{section2}, this section analyzes how adding my middleware to the system affects the performance. Due to the additional network hops from client to middleware and from middleware to server it is unavoidable that some additional latency is introduced. The middleware is designed to hide this latency with parallelism using its worker threads and, given a sufficient amount of parallelism, avoid becoming the bottleneck of the system.
 
 The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-1}.
 
@@ -427,26 +424,24 @@ The results in this section are based on the aggregated request logs from the mi
 \subsubsection{Explanation}
 
 % Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
-For read-only workload the server reaches its maximum outgoing network capacity of 12.5MB/s (see \autoref{link-caps}) already almost with 6 memtier clients in total. As \autoref{dstat:3-1} shows, the measured send capacity of dstat shows for all worker thread configurations a maximum of around 12.2MB/s. With 12 memtier clients in total this value increases up to 12.4MB/s in average. Because this corresponds to an increase of the total throughput of only 40 requests per second the entering of saturation phase is chosen to be at 6 memtier clients in total. From this point on, the system is in saturation phase as can be seen on \autoref{fig:3-1-throughput} (a) for all configurations of worker threads. Hence, no under- and no over-saturation phase has been observed for read-only workload.
-A maximum throughput of 2939 requests per second is reached, which is equivalent to the maximum throughput for read-only workload measured in \autoref{sec2.1}.
-Like in \autoref{sec2.1} bottleneck is the single memcached server with its limited outgoing network capacity.
-\autoref{fig:3-1-times-readonly} shows how the average service time, the time the server needs to respond to a request from the middleware, increases with more worker threads. This comes from the fact that more connections to the single memcached server are established in parallel. The figure also shows nicely how the queuing time in the middleware remains almost zero up until the number of memtier clients exceeds the number of worker threads. Up until the point where there are at least as many worker threads as clients connecting, because we are in a closed system and clients send requests only one after another, each request is taken from the queue immediately.
+For read-only workload the server reaches its maximum outgoing network capacity of 12.5MB/s (see \autoref{link-caps}) already almost with 6 clients. As \autoref{dstat:3-1} shows, the measured send capacity of dstat shows for all worker thread configurations a maximum of around 12.2MB/s. With 12 clients this value increases up to 12.4MB/s in average. Because this corresponds to an increase of the total throughput of only 40 requests per second the beginning of saturation phase is observed to be at 6 clients. From this point on, the system is in saturation phase as can be seen in \autoref{fig:3-1-throughput} (a) for all configurations of worker threads. Hence, no under- and no over-saturation phase has been observed for read-only workload.
+A maximum throughput of almost 3k requests per second is reached, which is similar to the maximum throughput for read-only workload measured in \autoref{sec2.1}.
+Like in \autoref{sec2.1} the bottleneck is the single memcached server with its limited outgoing network capacity.
+\autoref{fig:3-1-times-readonly} shows how the average service time, the time the server needs to respond to a request from the middleware, increases with more worker threads. This is because more connections to the single memcached server are established in parallel when having more worker threads. The figure also shows nicely how the queuing time in the middleware remains almost zero until the point where the number of clients exceeds the number of worker threads. Up until the point where there are at least as many worker threads as clients connecting, because we are in a closed system and clients send requests only one after another, each request is taken from the queue immediately.
 
 
-For write-only workload the situation is different. This time the server is not the bottleneck up until 64 worker threads. \autoref{fig:3-1-throughput} (b) shows nicely how the throughput increases with more worker threads. This leads to the conclusion that the middleware is the bottleneck, because if the number of worker threads in the middleware is increased, the throughput increases too. The dstat logs of all machines confirm this hypothesis and show that the network traffic stays within the maximum capacities listed in \autoref{link-caps} and the CPU usage of all machines stays below 70\%.
-\autoref{dstat:3-1wo} shows tif the number of worker threads is further increased to 128, the CPU usage of the server rises up until 90\% which is an indicator that the server is now the bottleneck and more worker threads will not lead to a higher throughput from this point on.
+For write-only workload the situation is different. This time the server is not the bottleneck until 64 worker threads. \autoref{fig:3-1-throughput} (b) shows nicely how the throughput increases with more worker threads. This leads to the conclusion that the middleware is the bottleneck, because if the number of worker threads in the middleware is increased, the throughput increases too. The dstat logs of all machines confirm this hypothesis and show that the network traffic stays within the maximum capacities listed in \autoref{link-caps} and the CPU usage of all machines stays below 70\%.
+\autoref{dstat:3-1wo} shows that for 128 worker threads the CPU usage of the server rises up until 90\% which is an indicator that the server is now the bottleneck and more worker threads will not lead to a higher throughput from this point on.
 For 8 and 16 worker threads the system is under-saturated until 18 clients, as the average response time remains constant up until this point as shown in \autoref{fig:3-1-times-writeonly} (a) and (b) and then starts to increase linearly.
-For 32 worker threads the system is under-saturated unitl 36 clients, again, the average response time remains constant up until this point and then starts to increase linearly as shown in \autoref{fig:3-1-times-writeonly} (c).
-For 64 worker threads the system changes from under-saturated to saturated at 72 clients, as the average response time remains almost constant up until this point as shown in \autoref{fig:3-1-times-writeonly} (d) and then increases linearly.
-From this observation we conclude that the middleware is under-saturated until the number of clients is at least as large as the number of worker threads. From then on the queue in the middleware is not empty anymore and saturation phase is reached.
-No over-saturation has been observed during this experiment.
-\todo{explain why response time is much lower compared to read-only workload.}
-
+For 32 worker threads the system is under-saturated until 36 clients, again, the average response time remains constant up until this point and then starts to increase linearly as shown in \autoref{fig:3-1-times-writeonly} (c).
+For 64 worker threads the system changes from under-saturated to saturated at 120 clients, as the average response time remains almost constant up until this point as shown in \autoref{fig:3-1-times-writeonly} (d) and then increases linearly.
+No over-saturation has been observed for all worker thread configurations.
+For read-only workload we observe again a significantly higher response time compared to write-only workload. This has already been observed and explained in section 2 and we assume that it is due to the same reason in this experiment.
 
 
 \subsection{Two Middlewares} \label{sec3.2}
 
-In this section the preformance of two middlewares is investigated, splitting the load into two, connecting each client machine to both middlewares.
+In this section the performance of two middlewares is investigated, splitting the load into two, connecting each client machine to both middlewares.
 
 The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-2}.
 
@@ -560,26 +555,24 @@ The results in this section are based on the aggregated request logs from the tw
 
 
 \subsubsection{Explanation}
-For read-only workload we observe the exact same throughput as in \autoref{sec3.1} for read-only workload. This is no surprise as also with two middlewares the server network upload reaches its maximum upload capacity already with 6 memtier clients. \autoref{dstat:3-2} shows several machine stats measured with dstat during the experiments for several worker thread configurations.
-The tresponse, queue and service times plotted in \autoref{fig:3-2-times-readonly} look very similar as in \autoref{sec3.1} but is shifted by one graph because 8 worker threads is now equal to the 16 worker threads graph of \autoref{sec3.1}, the 16 worker threads graph is equal to the 32 worker threads graph and so on. This is the case because doubling the amount of middlewares is equal to doubling the amount of worker threads (despite some overhead of the second middleware instance).
+For read-only workload we observe a similar throughput as in \autoref{sec3.1} for read-only workload. This is no surprise as also with two middlewares the server network upload reaches its maximum upload capacity already with 6 clients. \autoref{dstat:3-2} shows several machine stats measured with dstat during the experiments for several worker thread configurations.
+The response, queue and service times plotted in \autoref{fig:3-2-times-readonly} look very similar as in \autoref{sec3.1} if the 8 worker threads configuration is compared to the 16 worker threads graph of \autoref{sec3.1}, the 16 worker threads graph is compared to the 32 worker threads graph and so on. This is the case because doubling the amount of middlewares is equal to doubling the amount of worker threads.
 
-For write-only workload we also observe a similar throughput as in \autoref{sec3.1}, with the maximum throughput of 8 worker threads being equal to 16 worker threads in \autoref{sec3.1}. \autoref{fig:3-2-throughput} shows again that the two middlewares are the bottleneck up until 32 worker threads because an increase of worker threads leads to an increase of throughput. For 64 worker threads \autoref{dstat:3-2wo} shows a CPU usage of over 93\% on the server which implies that the bottleneck now lies at the server and that a further increase of worker thread would not lead to an increase in throughput.
-Furthermore, \autoref{fig:3-2-throughput} shows that doubling the number of middleware is almost equal to doubling the amount of workerthreads.
-\todo{explain why throughput is slightly higher for 2x middleware compared to 2x workerthreads?!}
-
+For write-only workload we also observe a similar throughput as in \autoref{sec3.1}, with the maximum throughput of 8 worker threads being similar to 16 worker threads in \autoref{sec3.1}. \autoref{fig:3-2-throughput} shows again that the two middlewares are the bottleneck up until 32 worker threads because an increase of worker threads leads to an increase of throughput. For 64 worker threads \autoref{dstat:3-2wo} shows a CPU usage of over 93\% on the server which implies that the bottleneck now lies at the server and that a further increase of worker thread would not lead to an increase in throughput.
+Furthermore, \autoref{fig:3-2-throughput} shows that doubling the number of middleware is almost equal to doubling the amount of workerthreads. However, we observe a slightly higher throughput for 2 middlewares compared to 1 middleware with double the amount of worker threads from 16 clients on. This can be due to the worker threads being run on 2 different machines which means that there is double the amount of CPU power available for 2 middlewares.
 
 \subsection{Summary}
 
 %Based on the experiments above, fill out the following table. For both of them use the numbers from a single experiment to fill out all lines. Miss rate represents the percentage of GET requests that return no data. Time in the queue refers to the time spent in the queue between the net-thread and the worker threads.
 This section is concluded by presenting the maximum throughput as well as the average response time and the average time in queue measured at the maximum throughput configuration in \autoref{sec3res}. The configuration which has been identified as the maximum throughput configuration is described in the first column.
 
-For one middleware and read-only workload a maximum throughput of 2939 requests per second is reached already with 8 worker threads, which is expected to be equivalent to the maximum throughput for read-only workload measured in \autoref{sec2.1}. We verify successfully that it is indeed  equivalent, with a difference of only 2 requests per second. The small difference can come from rounding or differences in the network latency. Same as in \autoref{sec2.1} bottleneck is the single memcached server with its limited outgoing network capacity.
+For one middleware and read-only workload a maximum throughput of 3k requests per second is reached already with 8 worker threads, which is very close to the maximum throughput for read-only workload measured in \autoref{sec2.1}. As in \autoref{sec2.1}, the bottleneck in this case is the single memcached server with its limited outgoing network capacity.
 
-For one middleware and write-only workload, a maximum throughput of 12k requests per second is observed for 64 worker threads. The bottleneck now lies at the middleware because the throughput keeps on increasing with a higher amount of worker threads. If we compare the maximum throughput to the one of \autoref{sec2.1} for write only throughput we realize that it is around 3k requests per second lower with the middleware and 64 worker threads. Hence we conclude that even for 64 worker threads the middleware is the bottleneck. This is confirmed also by the write-only experiment of \autoref{sec3.2} where the maximum throughput is now at 14.8k requests per second and because this is measured during the configuration with 2 middlewares with 64 worker threads each, this is expected to be equivalend to 1 middleware with 128 worker threads.
+For one middleware and write-only workload a maximum throughput of 12k requests per second is observed for 64 worker threads. The bottleneck now lies at the middleware because the throughput keeps on increasing with a higher amount of worker threads. If we compare the maximum throughput to the one of \autoref{sec2.1} for write only throughput we realize that it is around 3k requests per second lower with the middleware in between clients and server and 64 worker threads. Hence we conclude that even for 64 worker threads the middleware is the bottleneck. This is confirmed also by the write-only experiment of \autoref{sec3.2} where the maximum throughput is now at 14.8k requests per second and because this is measured during the configuration with 2 middlewares with 64 worker threads each, this is expected to be equivalend to 1 middleware with 128 worker threads.
 
-For two middlewares and write-only workload, as mentioned before, a maximum throughput of 14.8k requests per second is measured. This is equivalent to the maximum throughput measured in \autoref{sec2.1} which leads us to the conclusion that at this point the middleware is no longer the bottleneck. In \autoref{sec2.1} we observed the CPU of the single memcached server to be the bottleneck. We expect this to be the same here and \autoref{dstat:3-2wo} confirms this hypothesis by showing that the average server CPU usage is at 93\% for 64 worker threads per middleware and 192 memtier clients in total.
+For two middlewares and write-only workload, as mentioned before, a maximum throughput of almost 15k requests per second is measured. This is close to the maximum throughput measured in \autoref{sec2.1} which leads us to the conclusion that at this point the middleware is no longer the bottleneck. In \autoref{sec2.1} we observed the CPU of the single memcached server to be the bottleneck. We expect this to be the same here and \autoref{dstat:3-2wo} confirms this hypothesis by showing that the average server CPU usage is at 93\% for 64 worker threads per middleware and 192 clients.
 
-For two middlewares and read-only workload a maximum throughput of 2935 requests per second is measured. We expect this throughput to be the same as in \autoref{sec2.1} for read-only workload and we can confirm that it is with a difference of only 2 requests per second. \autoref{dstat:3-2} shows that, like in \autoref{sec2.1}, the maximum network upload capacity of the single memcached is reached already for 8 worker threads and 6 memtier clients.
+For two middlewares and read-only workload a maximum throughput of 3k requests per second is measured. We expect this throughput to be similar as in \autoref{sec2.1}, which is actually, with a difference of only 2 requests per second, the case. \autoref{dstat:3-2} shows that, like in \autoref{sec2.1}, the maximum network upload capacity of the single memcached is reached already for 8 worker threads and 6 clients.
 
 As observed in Section 2.1 the response time for read-only workload is much higher compared to write-only workload. We expect this to be the same for this experiment and in addition observe how the queueing time in the middleware increases once the system reaches the saturation phase. Before the saturation phase, the server service time dominates the response time while in the saturation phase the queueing time does.
 
@@ -588,34 +581,35 @@ As observed in Section 2.1 the response time for read-only workload is much high
 
 
 
-\begin{center}
 \begin{table}
-	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline                                                   & Throughput [req/s]    & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware (8WT, 12 clients)   &     2939       &    3.15ms     & 0.79ms                & 0.0       \\ 
-		\hline Reads: Measured on clients (8WT, 12 clients)      &     2939       &    4.1ms      & n/a                   & 0.0       \\ 
-		\hline Writes: Measured on middleware (64WT, 120 clients)&     12030      &    8.27ms     & 3.24ms                & n/a       \\ 
-		\hline Writes: Measured on clients (64WT, 120 clients)   &     12034      &    9.97ms     & n/a                   & n/a       \\ 
-		\hline 
-	\end{tabular}
-	\caption{Maximum throughput for one middleware.}
-	\label{sec3res}
-	\end{table}
-\end{center}
+    \begin{subtable}{1.0\linewidth}\centering
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+    		\hline                                                   & Throughput [req/s]    & Response time [ms] & Avg. time in queue [ms] & Miss rate \\ 
+    		\hline Reads: Measured on MW (8WT, 12 clients)   &     2939       &    3.1     & 0.79                & 0.0       \\ 
+    		\hline Reads: Measured on clients (8WT, 12 clients)      &     2939       &    4.1      & n/a                   & 0.0       \\ 
+    		\hline Writes: Measured on MW (64WT, 120 clients)&     12030      &    8.27     & 3.24                & n/a       \\ 
+    		\hline Writes: Measured on clients (64WT, 120 clients)   &     12034      &    9.97     & n/a                   & n/a       \\ 
+    		\hline 
+    	\end{tabular}
+	    \caption{For one middleware}
+	\end{subtable}
+	
+	\begin{subtable}{1.0\linewidth}\centering
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+    		\hline                                                    & Throughput [req/s]    & Response time [ms] & Avg. time in queue [ms] & Miss rate \\ 
+    		\hline Reads: Measured on MW (8WT, 12 clients)    &    2935        &   3.12      &   0.12              & 0.0       \\ 
+    		\hline Reads: Measured on clients(8WT, 12 clients)        &    2935        &   4.08      & n/a                   & 0.0       \\ 
+    		\hline Writes: Measured on MW (64WT, 192 clients) &    14810       &   11.84     &   3.25              & n/a       \\ 
+    		\hline Writes: Measured on clients (64WT, 192 clients)    &    14813       &   12.96     & n/a                   & n/a       \\ 
+    		\hline 
+    	\end{tabular}
+    	\caption{For two Middlewares}
+	\end{subtable}
+	\caption{Maximum Throughput}
+    \label{sec3res}
+\end{table}
 
-\begin{center}
-	{Maximum throughput for two middlewares.}
-	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
-		\hline                                                    & Throughput [req/s]    & Response time & Average time in queue & Miss rate \\ 
-		\hline Reads: Measured on middleware (8WT, 12 clients)    &    2935        &   3.12ms      &   0.12ms              & 0.0       \\ 
-		\hline Reads: Measured on clients(8WT, 12 clients)        &    2935        &   4.08ms      & n/a                   & 0.0       \\ 
-		\hline Writes: Measured on middleware (64WT, 192 clients) &    14810       &   11.84ms     &   3.25ms              & n/a       \\ 
-		\hline Writes: Measured on clients (64WT, 192 clients)    &    14813       &   12.96ms     & n/a                   & n/a       \\ 
-		\hline 
-	\end{tabular}
-\end{center}
-
-Based on the data provided in these tables, write at least two paragraphs summarizing your findings about the performance of the middleware in the baseline experiments.
+%Based on the data provided in these tables, write at least two paragraphs summarizing your findings about the performance of the middleware in the baseline experiments.
 
 \section{Throughput for Writes (90 pts)}
 
@@ -675,12 +669,12 @@ The results in this section are based on the aggregated request logs from the tw
 
 %Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
 Compared to \autoref{sec3.2} there are now 3 servers instead of 1 in the system. For write-only workload the middleware replicates each request to all 3 servers. This comes with some overhead because the middleware needs to send it to each server one by one and receive it one by one. However, this overhead is small compared to the difference in network latency between the servers. The way the middleware is built, it has to wait for the slowest server. \todo{add ping time table to make a point here}
-In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations, namely between 12.5\% and 20\% less throughput from 8 up to 64 worker threads. When looking at \autoref{fig:4-times} we observe that the total response time is slightly higher compared to the one measured in \autoref{sec3.2}.
-At the maximum throughput configuration for each worker thread configuration (see \autoref{res4}) a difference of the service time (average time waiting for response from memcached servers) compared to \autoref{sec3.2} has been measured of 0.33ms, 0.41ms, 0.9ms and 1.5ms for 8, 16, 32 and 64 worker threads respectively. We also observed that the average time in the queue differs also exactly by this time. The amount of requests in the queue has been observed to be similar compared to \autoref{sec3.2}. The higher memcached service time can be explained with the implementation of the middleware and the network structure of the system at hand in mind, where the middleware needs to wait for the response of the slowest memcached server before it can finish a request successfully and start to handle the next one.
-The aggregated and averaged machine stats collected with dstat do not show any machine bottleneck being reached. While in \autoref{sec3.2} the CPU of the memcached server was the bottleneck, the average CPU utilization of all three memcached servers is around 80\% with 64 worker threads per middleware which is excluding the server CPU as the bottleneck for this experiment. We conclude that the increased service time due to the middleware implementation leads to a lower throughput, which means less arriving requests at the servers and therefore less work per server. Therefore we identify the bottleneck for this experiment as the middleware and expect the throughput to increase with more worker threads. And indeed, when performing the experiment using 128 worker threads per middleware, a further increase of the maximum throughput can be measured up until 14k requests per second - this confirms our hypothesis that the bottleneck lies at the middlewares until 64 worker threads, namely at the non sufficient parallelization.
+In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations compared to \autoref{sec3.2}, namely between 12.5\% and 20\% less throughput from 8 up to 64 worker threads. When looking at \autoref{fig:4-times} we observe that the total response time is slightly higher compared to the one measured in \autoref{sec3.2}.
+At the maximum throughput configuration for each worker thread configuration (see \autoref{res4}) a difference of the peak service time (average time waiting for all responses from the memcached servers) compared to \autoref{sec3.2} has been measured of 0.33ms, 0.41ms, 0.9ms and 1.5ms for 8, 16, 32 and 64 worker threads respectively. We also observed that the average time in the queue differs also roughly by this time. The amount of requests in the queue has been observed to be similar compared to \autoref{sec3.2}. The higher memcached service time can be explained with the implementation of the middleware and the network structure of the system at hand in mind, where the middleware needs to wait for the response of the slowest memcached server before it can finish a request successfully and start to handle the next one.
+The aggregated and averaged machine stats collected with dstat do not show any machine bottleneck being reached. While in \autoref{sec3.2} the CPU of the memcached server was the bottleneck, the average CPU utilization of all three memcached servers is now around 80\% with 64 worker threads per middleware which is excluding the server CPU as the bottleneck for this experiment. We conclude that the increased service time due to the middleware implementation leads to a lower throughput, which leads to a lower arrival rate at the servers and therefore to less work per server. Hence we identify the bottleneck for this experiment as the middleware and expect the throughput to increase with more worker threads. And indeed, when performing the experiment using 128 worker threads per middleware, a further increase of the maximum throughput can be measured up until 14k requests per second - this confirms our hypothesis that the bottleneck lies at the middlewares until 64 worker threads, namely at the non sufficient parallelization.
 
-For 8 worker threads the system is under-saturated until 36 virtual clients in total. From this point on, the system is saturated. This is concluded from the observation that the throughput does not increase with a higher amount of memtier clients. Furthermore \autoref{fig:4-times} shows nicely how until 36 clients the dominating factor of the middleware response time is the server service time and from 36 clients on the dominating factor is the queueing time. This shows that from 36 clients on the middlewares are not able to immediately process incoming requests and the queue starts to grow with more clients.
-For 16 worker threads the saturation phase starts at 72 virtual clients, for 32 worker threads the saturation phase begins at 120 virtual clients and for 64 worker threads per middleware the saturation phase begins with 192 virtual clients. For all worker thread configuration the same explanation as for 8 worker threads holds, before the saturation phase is reached, the system is under-saturated.
+For 8 worker threads the system is under-saturated until 36 clients. From this point on, the system is saturated. This is concluded from the observation that the throughput does not increase with a higher amount of clients. Furthermore \autoref{fig:4-times} shows nicely how until 36 clients the dominating factor of the middleware response time is the server service time and from 36 clients on the dominating factor is the queueing time. This shows that from 36 clients on the middlewares are not able to immediately process incoming requests and the queue starts to grow with more clients.
+For 16 worker threads the saturation phase starts at 72 clients, for 32 worker threads the saturation phase begins at 120 clients and for 64 worker threads per middleware the saturation phase begins with 192 clients. For all worker thread configuration the same explanation as for 8 worker threads holds, before the saturation phase is reached, the system is under-saturated. The beginning of the saturation phases align well with the ones observed in \autoref{sec3.2}.
 No over-saturation of the system has been observed during this experiment
 
 \subsection{Summary}
@@ -695,14 +689,14 @@ Compared to \autoref{sec3.2} the servers are no longer the bottleneck for any of
 \begin{center}
 \begin{table}
 	\begin{tabular}{|l|p{1.7cm}|p{1.7cm}|p{1.75cm}|p{1.75cm}|}
-		\hline                                            & WT=8, 36 clients & WT=16, 72 clients  & WT=32, 120 clients   & WT=64, 192 clients   \\ 
-		\hline Throughput (Middleware) [req/s]           & 7110              & 9158                & 10817                 & 12568                 \\ 
-		\hline Throughput (Derived from MW response time) [req/s] & 7045       & 9148               & 10810           & 12549         \\
+		\hline                                              & WT=8, 36 clients & WT=16, 72 clients    & WT=32, 120 clients    & WT=64, 192 clients   \\ 
+		\hline Throughput (MW) [req/s]                      & 7110              & 9158                & 10817                 & 12568                 \\ 
+		\hline Throughput (Derived from MW RT) [req/s]      & 7045              & 9148                & 10810                 & 12549         \\
 		%8WT, 36cli: 4.11msRT, 1ms thinking time | 16WT, 72cli: 6.87msRT, 1.2ms thinkingtime | 32WT, 120cli: 9.98msRT, 1.1ms thinkingtime \ 64WT, 192cli: 14.04msRT, 1.25ms thinkingtime
-		\hline Throughput (Client) [req/s]                & 7108              & 9160                & 10813                 & 12566                 \\ 
-		\hline Average time in queue                      & 1.87ms            & 3.39ms              & 4.09ms                & 3.93                  \\ 
-		\hline Average length of queue                    & 4.87              & 11.68               & 16.18                 & 19.23                 \\ 
-		\hline Average time waiting for memcached         & 2.21ms            & 3.46                & 5.87ms                & 10.09                 \\ 
+		\hline Throughput (Client) [req/s]                  & 7108              & 9160                & 10813                 & 12566                 \\ 
+		\hline Avg. time in queue [ms]                      & 1.87            & 3.39              & 4.09                & 3.93                  \\ 
+		\hline Avg. length of queue                         & 4.87              & 11.68               & 16.18                 & 19.23                 \\ 
+		\hline Avg. time waiting for memcached [ms]         & 2.21            & 3.46                & 5.87                & 10.09                 \\ 
 		\hline 
 	\end{tabular}
 	\caption{Maximum throughput for the full system in \autoref{sec4}} \label{res4}
