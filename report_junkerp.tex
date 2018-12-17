@@ -62,7 +62,7 @@ In addition, the main thread also creates the request queue and registers a shut
 
 \begin{figure}
     \includegraphics[width=.8\linewidth]{plots/SystemOverview.pdf}
-    \caption{System Overview}
+    \caption{System Overview. Load generating memtier clients were omitted in illustration. All arrows to and from the network are bi-directional. The worker threads return the response in the end to the requesting client.}
     \label{fig:Overview}
 \end{figure}
 
@@ -208,10 +208,10 @@ Up until 120 clients the system is under-saturated because we observe an increas
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, read-only, 6 memtier clients in total & 11.0\%         & 12.41 MB/s    & 0.44 MB/s\\
-            \hline Clients, read-only, 6 memtier clients in total & 5.44\%           & 0.16 MB/s     & 4.24 MB/s\\
-            \hline Server, write-only,  120 memtier clients in total & 93.28\%        & 2.05 MB/s     & 63.33 MB/s\\
-            \hline Clients, write-only, 120 memtier clients in total & 18.09\%       & 20.97 MB/s     & 0.69 MB/s\\
+            \hline Server, read-only, 6 clients & 11.0\%         & 12.41 MB/s    & 0.44 MB/s\\
+            \hline Clients, read-only, 6 clients & 5.44\%           & 0.16 MB/s     & 4.24 MB/s\\
+            \hline Server, write-only,  120 clients & 93.28\%        & 2.05 MB/s     & 63.33 MB/s\\
+            \hline Clients, write-only, 120 clients & 18.09\%       & 20.97 MB/s     & 0.69 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during Experiments for \autoref{sec2.1}}
@@ -265,10 +265,10 @@ The bottleneck for write-only workload has been identified at the outgoing netwo
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, read-only, 8 memtier clients in total & 11.40\%         & 12.45 MB/s    & 0.44 MB/s\\
-            \hline Clients, read-only, 8 memtier clients in total & 21.34\%           & 0.87 MB/s     & 24.95 MB/s\\
-            \hline Server, write-only,  6 memtier clients in total & 12.50\%        & 0.42 MB/s     & 12.88 MB/s\\
-            \hline Clients, write-only, 6 memtier clients in total & 17.91\%       & 24.66 MB/s     & 0.83 MB/s\\
+            \hline Server, read-only, 8 clients & 11.40\%         & 12.45 MB/s    & 0.44 MB/s\\
+            \hline Clients, read-only, 8 clients & 21.34\%           & 0.87 MB/s     & 24.95 MB/s\\
+            \hline Server, write-only,  6 clients & 12.50\%        & 0.42 MB/s     & 12.88 MB/s\\
+            \hline Clients, write-only, 6 clients & 17.91\%       & 24.66 MB/s     & 0.83 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during Experiments for \autoref{sec2.2}}
@@ -393,10 +393,10 @@ The results in this section are based on the aggregated request logs from the mi
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, read-only, 8WT, 6 memtier clients in total & 10.75\%         & 12.20 MB/s    & 0.43 MB/s\\
-            \hline Server, read-only, 16WT, 6 memtier clients in total & 11.35\%         & 12.17 MB/s    & 0.43 MB/s\\
-            \hline Server, read-only, 32WT, 6 memtier clients in total & 13.62\%         & 12.27 MB/s    & 0.43 MB/s\\
-            \hline Server, read-only, 64WT, 6 memtier clients in total & 15.01\%         & 12.24 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 8WT, 6 clients & 10.75\%         & 12.20 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 16WT, 6 clients & 11.35\%         & 12.17 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 32WT, 6 clients & 13.62\%         & 12.27 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 64WT, 6 clients & 15.01\%         & 12.24 MB/s    & 0.43 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during read-only Experiments for \autoref{sec3.1}}
@@ -409,11 +409,11 @@ The results in this section are based on the aggregated request logs from the mi
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, write-only, 8WT, 192 memtier clients in total & 21.96\%         & 0.86 MB/s    & 26.51 MB/s\\
-            \hline Server, write-only, 16WT, 192 memtier clients in total & 45.52\%         & 1.17 MB/s    & 36.14 MB/s\\
-            \hline Server, write-only, 32WT, 192 memtier clients in total & 65.48\%         & 1.39 MB/s    & 42.81 MB/s\\
-            \hline Server, write-only, 64WT, 192 memtier clients in total & 80.70\%         & 1.71 MB/s    & 52.65 MB/s\\
-            \hline Server, write-only, 128WT, 192 memtier clients in total & 90.87\%         & 1.94 MB/s    & 59.75 MB/s\\
+            \hline Server, write-only, 8WT, 192 clients & 21.96\%         & 0.86 MB/s    & 26.51 MB/s\\
+            \hline Server, write-only, 16WT, 192 clients & 45.52\%         & 1.17 MB/s    & 36.14 MB/s\\
+            \hline Server, write-only, 32WT, 192 clients & 65.48\%         & 1.39 MB/s    & 42.81 MB/s\\
+            \hline Server, write-only, 64WT, 192 clients & 80.70\%         & 1.71 MB/s    & 52.65 MB/s\\
+            \hline Server, write-only, 128WT, 192 clients & 90.87\%         & 1.94 MB/s    & 59.75 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during write-only Experiments for \autoref{sec3.1}}
@@ -526,10 +526,10 @@ The results in this section are based on the aggregated request logs from the tw
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, read-only, 8WT, 6 memtier clients in total & 11.73\%         & 12.29 MB/s    & 0.43 MB/s\\
-            \hline Server, read-only, 16WT, 6 memtier clients in total & 14.25 \%         & 12.29MB/s    & 0.43 MB/s\\
-            \hline Server, read-only, 32WT, 6 memtier clients in total & 14.97\%         & 12.25 MB/s    & 0.43 MB/s\\
-            \hline Server, read-only, 64WT, 6 memtier clients in total & 16.14\%         & 12.26 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 8WT, 6 clients & 11.73\%         & 12.29 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 16WT, 6 clients & 14.25 \%         & 12.29MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 32WT, 6 clients & 14.97\%         & 12.25 MB/s    & 0.43 MB/s\\
+            \hline Server, read-only, 64WT, 6 clients & 16.14\%         & 12.26 MB/s    & 0.43 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during read-only Experiments for \autoref{sec3.2}, two middlewares}
@@ -541,11 +541,11 @@ The results in this section are based on the aggregated request logs from the tw
     \begin{table}
     	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|}
             \hline \textbf{Configuration} & \textbf{CPU} & \textbf{Send} & \textbf{Receive}\\
-            \hline Server, write-only, 8WT, 192 memtier clients in total & 51.19\%         & 1.18 MB/s    & 36.37 MB/s\\
-            \hline Server, write-only, 16WT, 192 memtier clients in total & 65.11\%         & 1.45 MB/s    & 44.75 MB/s\\
-            \hline Server, write-only, 32WT, 192 memtier clients in total & 81.20\%         & 1.77 MB/s    & 54.75 MB/s\\
-            \hline Server, write-only, 64WT, 192 memtier clients in total & 93.17\%         & 2.05 MB/s    & 63.48 MB/s\\
-            \hline Server, write-only, 128WT, 192 memtier clients in total & 95.18\%         & 2.02 MB/s    & 62.38 MB/s\\
+            \hline Server, write-only, 8WT, 192 clients & 51.19\%         & 1.18 MB/s    & 36.37 MB/s\\
+            \hline Server, write-only, 16WT, 192 clients & 65.11\%         & 1.45 MB/s    & 44.75 MB/s\\
+            \hline Server, write-only, 32WT, 192 clients & 81.20\%         & 1.77 MB/s    & 54.75 MB/s\\
+            \hline Server, write-only, 64WT, 192 clients & 93.17\%         & 2.05 MB/s    & 63.48 MB/s\\
+            \hline Server, write-only, 128WT, 192 clients & 95.18\%         & 2.02 MB/s    & 62.38 MB/s\\
             \hline
     	\end{tabular}
 	\caption{Machine Stats during write-only Experiments for \autoref{sec3.2}, two middlewares}
@@ -682,7 +682,8 @@ This section is concluded by presenting the maximum throughput as well as the av
 
 When comparing the results of this experiment to the results obtained in \autoref{sec3.2} we observe significantly lower maximum throughputs of up to 20\%. The reason for this is the replication, for which the middleware has to wait until it receives an answer from the slowest (or furthest away) memcached server. We have observed that the increase in server service time is mainly due to different network latencies of the 3 servers.
 
-Compared to \autoref{sec3.2} the servers are no longer the bottleneck for any of the worker thread configurations in this experiments. We concluded that for all worker thread configurations the middleware is the bottleneck and that the reason for this is the higher server service time, which leads to a lower arrival rate at the memcached servers.
+Compared to \autoref{sec3.2} the servers are no longer the bottleneck for any of the worker thread configurations in this experiments. We concluded that for all worker thread configurations the middleware is the bottleneck and that the reason for this is the higher server service time, which leads to a lower arrival rate at the memcached servers. This is because our system is closed and the clients need to wait for a response from the middleware before sending the next request.
+\todo{Mention queue time, service time}
 
 
 
@@ -752,12 +753,12 @@ The results in this section are based on the aggregated request logs from the tw
 
 \subsubsection{Explanation}
 %Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
-In the sharded mode, each GET request is split into 3 parts for 3 or more keys and requested from each server. With the same explanation as in \autoref{sec4} we expect a higher server service time because the way the middleware is constructed it has to wait until it received a response from all servers. However, the overhead is much smaller, because unlike in the case of replication, the sum of the amount of data sent to the server remains almost, except for some overhead for the different TCP packages, the same.
-For the sharded mode we observe that the response time measured at the client remains almost the same for 1 and 3 keys. For 1,3,6,9 keys we measured an average throughput of 3k, 7.5k, 8.7k and 8.8k requests per second respectively. These numbers have been normalized, meaning the measured throughput for 3 keys has been multiplied by 3, for 6 keys by 6 and for 9 keys by 9.
-The configuration at hand is, with the only difference that there are 3 servers, the same as the one in \autoref{sec3.2}, where we measured a maximum throughput of 2935 requests per second for read-only workload. For 3 servers we expect the throughput to increase by a factor of 3 because the limiting factor in \autoref{sec3.2} has been identified as the network upload capacity at the server. So the maximum reachable throughput is expected to be no higher than 8.8k requests per second.
+In the sharded mode, each GET request is split into 3 parts for 3 or more keys and requested from each server. With the same explanation as in \autoref{sec4} we expect a higher server service time because the way the middleware is constructed it has to wait until it received a response from all servers. However, the overhead is much smaller, because unlike in the case of replication, the sum of the amount of data sent to the server remains almost, except for some overhead for the different TCP packages, the same because instead of 1 large request, each server now gets 3 small requests per multiget request.
+For the sharded mode we observe that the response time measured at the client remains almost the same for 1 and 3 keys. For 1,3,6,9 keys we measured a normalized average throughput of 3k, 7.5k, 8.7k and 8.8k requests per second respectively. These numbers are normalized, meaning the measured throughput for 3 keys has been multiplied by 3, for 6 keys by 6 and for 9 keys by 9.
+The configuration at hand is, with the only difference that there are 3 servers, the same as the one in \autoref{sec3.2}, where we measured a maximum throughput of almost 3k requests per second for read-only workload. For 3 servers we would expect the throughput to increase by a factor of 3 because the limiting factor in \autoref{sec3.2} has been identified as the network upload capacity at the server. So the maximum throughput is expected to be around 8.8k requests per second.
 We notice that for 6 keys the maximum throughput of 8.8k requests per second is almost reached and for 9 keys it is reached.\todo{add dstat table for 6 and 12 keys and refer to it, show server upload bottleneck.}
 The average response time as well as the percentiles displayed in \autoref{fig:5-latencyPercentiles} (a) remain almost the same for 1 and 3 keys because the system is still under-saturated. Also, because the middlewares operate in sharded mode, the servers have to handle only single key requests as the 3 key requests are split up into three single key requests.
-For 6 keys per request the system almost reaches its saturation phase, with the bottleneck being the server network upload capacity. The servers now have to handle 2 key requests because the middlewares split every 6 key request into 3 requests with 2 keys each.
+For 6 keys per request the system almost reaches its saturation phase, with the bottleneck being the server network upload capacity. The servers now have to handle 2 key requests because the middlewares split every 6-key-request into 3 requests with 2 keys each.
 
 
 
@@ -1248,61 +1249,73 @@ For the M/M/m model we used a load dependent service time which we set to the me
 \autoref{Table:NetworkOfQueues} (d) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. 
 \todo{add measured values to tables and compare them}
 
+
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
-        \begin{tabular}{lllllll}
+        \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & 6  & 18 & 36 & 72 & 120 & 192\\
+        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}} & \multicolumn{2}{|c|}{\textbf{72}}\\
         \hline
-        Throughput & 2984.7 & 5978.9 & 8975.4 & 11937.5 & 4450.3 & NA\\
-        Response Time & 2ms & 3ms & 4ms & 6ms & 27.4ms & NA\\
-        Queue Length & 3 & 12 & 26.9 & 59.9 & 117.5 & NA\\
-        Utilization & 0.05 & 0.18 & 0.46 & 0.93 & 0.34 & NA\\
+         & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
+        \hline
+        Throughput [req/s] & 2985 & 2973 & 5979 & 6425 & 8975 & 6356 &  11937.5 & 6252\\
+        Resp. Time [ms] & 2 & 1.1 & 3 & 1.9 & 4 & 4.7 & 6 & 10.6\\
+        Queue Len. [\#req]& 3 & 0.4 & 12 & 1.7 & 26.9 & 5.9 & 59.9 & 15.0\\
+        Utilization [\%] & 0.05 & - & 0.18 & - & 0.46 & - & 0.93 & -\\
         \hline
         \end{tabular}
     \caption{1 Middleware, Write-Only, 64 Worker Threads per Middleware}
     \end{subtable}
-    
+
     \begin{subtable}{1.0\linewidth}\centering
-        \begin{tabular}{llllllll}
+        \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & 6 & 12 & 18 & 24 & 30 & 36 & 192\\
+        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{12}} & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}}\\
         \hline
-        Throughput & 2984.7 & 2606.1 & 2666.6 & 2666.7 & 2666.7 & 2666.7 & NA\\
-        Response Time & 2ms & 4.6ms & 6.7ms & 9ms & 11.3ms & 13.5ms & NA\\
-        Queue Length & 3 & 9.3 & 12.7 & 21.3 & 27.3 & 33.3 & NA\\
-        Utilization & 0.37 & 0.97 & 1 & 1 & 1 & 1 & NA\\
+         & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
+        \hline
+        Throughput [req/s] & 2985 & 2909 & 2606 & 2939 & 2667 & 2936 & 2667 & 2937\\
+        Resp. Time [ms]  & 2 & 1.2 & 4.6 & 3.2 & 6.7 & 5.2 & 13.5 & 11.2\\
+        Queue Len. [\#req] & 2 & 0.5 & 4.6 & 1.0 & 6.7 & 4.3 & 13.5 & 22.1\\
+        Utilization [\%] & 0.37 & - & 0.97 & - & 1 & - & 1 & -\\
         \hline
         \end{tabular}
     \caption{1 Middleware, Read-Only, 8 Worker Threads per Middleware }
     \end{subtable}
-    
+
+
     \begin{subtable}{1.0\linewidth}\centering
-        \begin{tabular}{lllllll}
+        \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & 6 & 18 & 36 & 72 & 120 & 192\\
+        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}} & \multicolumn{2}{|c|}{\textbf{72}}\\
         \hline
-        Throughput & 1993.3 & 5979.5 & 8976.5 & 11978.8 & 11910.6 & NA\\
-        Response Time & 3ms & 3ms & 4ms & 6ms & 10ms & NA\\
-        Queue Length & 1.5 & 4.5 & 7.6 & 10.2 & 13.4 & NA\\
-        Utilization & 0.03 & 0.09 & 0.21 & 0.84 & 0.94 & NA\\
+         & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
+        \hline
+        Throughput [req/s] & 1993 & 3047 & 5980 & 7260 & 8977  & 8326 & 11978.8 & 8398\\
+        Resp. Time [ms] & 3 & 1.1 & 3 & 1.6 & 4 & 3.4 & 6 & 7.6\\
+        Queue Len. [\#req] & 1.5 & 0.1 & 4.5 & 0.7 & 7.6 & 1.8 & 10.2 & 3.1\\
+        Utilization [\%] & 0.03 & - & 0.09 & - & 0.21 & - & 0.84 & -\\
         \hline
         \end{tabular}
     \caption{2 Middlewares, Write-Only, 64 Worker Threads per Middleware}
     \end{subtable}
     
+
+    
     \begin{subtable}{1.0\linewidth}\centering
-        \begin{tabular}{llllllll}
+        \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & 6 & 12 & 18 & 24 & 30 & 36 & 192\\
+        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{12}} & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}}\\
         \hline
-        Throughput & 2984.9 & 2985.7 & 2699.2 & 2938.9 & 3024.7 & 3068.1 & NA\\
-        Response Time & 2ms & 4ms & 6.6ms & 8.1ms & 9.9ms & 11.7ms & NA\\
-        Queue Length & 1.5 & 4.5 & 7.6 & 10.5 & 13.5 & 16.5 & NA\\
-        Utilization & 0.18 & 0.55 & 0.84 & 0.91 & 0.94 & 0.95 & NA\\
+         & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
+        \hline
+        Throughput [req/s]  & 2985 & 2927 & 2986 & 2936 & 2699 & 2936 & 3068 & 2939\\
+        Resp. Time [ms]  & 2 & 1.1 & 4 & 3.1 & 6.6 & 5.2 & 11.7 & 11.2\\
+        Queue Len. [\#req] & 1.5 & 0.2 & 4.5 & 0.8 & 7.6 & 1.1 & 16.5 & 4.8\\
+        Utilization [\%] & 0.18 & - & 0.55 & - & 0.84 & - & 0.95 & -\\
         \hline
         \end{tabular}
-    \caption{2 Middlewares, Read-Only, 8 Worker Threads per Middleware}
+    \caption{1 Middleware, Read-Only, 8 Worker Threads per Middleware }
     \end{subtable}
     \caption{Predicted values of Network of Queues}
     \label{Table:NetworkOfQueues}
