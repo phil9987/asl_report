@@ -571,6 +571,8 @@ For one middleware and read-only workload a maximum throughput of 3k requests pe
 
 For one middleware and write-only workload a maximum throughput of 12k requests per second is observed for 64 worker threads. The bottleneck now lies at the middleware because the throughput keeps on increasing with a higher amount of worker threads. If we compare the maximum throughput to the one of \autoref{sec2.1} for write only throughput we realize that it is around 3k requests per second lower with the middleware in between clients and server and 64 worker threads. Hence we conclude that even for 64 worker threads the middleware is the bottleneck. This is confirmed also by the write-only experiment of \autoref{sec3.2} where the maximum throughput is now at 14.8k requests per second and because this is measured during the configuration with 2 middlewares with 64 worker threads each, this is expected to be equivalend to 1 middleware with 128 worker threads.
 
+Comparing the one middleware system with the two middleware system we observe that, for write-only workload, we would expect that having 2 middlewares is equal to having double the amount of worker threads. During our experiments we observed a significantly higher maximum throughput for the 2 middleware system compared to the single middleware system with an equal total number of worker threads. We concluded that this comes from the additional CPU power because the 2 middlewares are running on two separate machines and hence they have double the CPU power compared to the single middleware system. For read-only workload we measure exactly the same maximum throughput for single and double middleware systems due to the bottleneck being at the server network upload capacity.
+
 For two middlewares and write-only workload, as mentioned before, a maximum throughput of almost 15k requests per second is measured. This is close to the maximum throughput measured in \autoref{sec2.1} which leads us to the conclusion that at this point the middleware is no longer the bottleneck. In \autoref{sec2.1} we observed the CPU of the single memcached server to be the bottleneck. We expect this to be the same here and \autoref{dstat:3-2wo} confirms this hypothesis by showing that the average server CPU usage is at 93\% for 64 worker threads per middleware and 192 clients.
 
 For two middlewares and read-only workload a maximum throughput of 3k requests per second is measured. We expect this throughput to be similar as in \autoref{sec2.1}, which is actually, with a difference of only 2 requests per second, the case. \autoref{dstat:3-2} shows that, like in \autoref{sec2.1}, the maximum network upload capacity of the single memcached is reached already for 8 worker threads and 6 clients.
@@ -731,7 +733,7 @@ This section analyzes the effect on throughput and response time of sharding MUL
 \subsection{Sharded Case} \label{sec5.1}
 
 %Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th 
-The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp5}.
+The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp5}. The configuration with 64 worker threads has been chosen because it was the one with the highest throughput in section 3 for write-only workload. Even though we are mainly interested in the MULTIGET workload in this section, 50\% of the requests are SET requests, so in order to minimize the effect of the SET request on the performance of our system we chose to set the number of WT to 64.
 
 
 \begin{figure}
@@ -763,6 +765,7 @@ For 6 keys per request the system almost reaches its saturation phase, with the 
 \subsection{Non-sharded Case} \label{sec5.2}
 %Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding disabled. Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
 The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp5}.
+With the same explanation as in \autoref{sec5.1} and because we want to be able to compare it to the sharded case, we also chose for the non-sharded case a configuration with 64 worker threads.
 
 
 \subsubsection{Explanation}
@@ -775,7 +778,6 @@ We notice that for 6 keys the maximum throughput of 8.8k requests per second is 
 
 The average response time as well as the percentiles displayed in \autoref{fig:5-latencyPercentiles} (b) remain almost the same for 1 and 3 keys because the system is still under-saturated. We notice here that the response times for 1 and 3 keys do not differ significantly compared to the sharded case
 For 6 keys per request the system almost reaches its saturation phase, with the bottleneck being the server network upload capacity. Even though the servers have to handle 3 times larger keys compared to the sharded case, the average response time is almost the same. However, the 50th, 90th and 99th percentiles are much higher for the sharded case for both 6 and 9 keys. This indicates that the system is less stable for a higher number of keys in multiget requests. The reason for this could be the larger network packages due to the higher number of keys per request in the non-sharded mode.
-\todo{elaborate on non-sharded histograms and percentiles}
 
 \subsection{Histogram}
 %For the case with 6 keys inside the multi-get, display four histograms representing the sharded and non-sharded response time distribution, both as measured on the client, and inside the middleware. Choose the bucket size in the same way for all four, and such that there are at least 10 buckets on each of the graphs.
@@ -1016,10 +1018,10 @@ With the model, we predict the expected response time $E[r]$, the expected queue
 This model is too simplistic to model our system accurately because it assumes that there is only a single queue and a single worker. Furthermore it cannot model a closed system which we can see at the queue size which increases higher than the number of clients, in a closed system like ours this is not possible because every client waits for a response before sending the next request.
 
 \begin{figure}
-    \begin{subfigure}{.5\textwidth}
+    \begin{subfigure}{.4\textwidth}
         \includegraphics[width=1\linewidth]{plots/7_MM1_ResponseTimePredicted.eps}
     \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
+    \begin{subfigure}{.4\textwidth}
         \includegraphics[width=1\linewidth]{plots/7_MM1_ResponseTimeObserved.eps}
     \end{subfigure}
     \caption{M/M/1 predicted and measured Response Times, Full System, \autoref{sec7.1}}
@@ -1027,10 +1029,10 @@ This model is too simplistic to model our system accurately because it assumes t
 \end{figure}
 
 \begin{figure}
-    \begin{subfigure}{.5\textwidth}
+    \begin{subfigure}{.4\textwidth}
         \includegraphics[width=1\linewidth]{plots/7_MM1_QueueSizePred.eps}
     \end{subfigure}
-    \begin{subfigure}{.5\textwidth}
+    \begin{subfigure}{.4\textwidth}
         \includegraphics[width=1\linewidth]{plots/7_MM1_QueueSizeObserved.eps}
     \end{subfigure}
     \caption{M/M/1 predicted and measured Queue Size, Full System, \autoref{sec7.1}}
@@ -1211,23 +1213,48 @@ This model models our system a bit better than the M/M/1 model because it takes 
 % A: You need to consider both 1 and 2 middleware configuration. You need to analyze both read only and write only workloads. You can set the number of worker threads to the constant that delivers highest throughput.
 Using a network of queues we are able to model our system more accurately. In this section we will explore the setup of 1 middleware and 2 middlewares as well as read-only and write-only workload. We will compare the results to the measurements of \autoref{sec3.1} and \autoref{sec3.2}. The network of queues allows us to use load dependent service times and to model a closed system, which should lead to more accurate predictions.
 \subsubsection{One Middleware}
-\autoref{fig:7-3:1MW} shows our network of queues model for 1 middleware. We model the network latency as an $M/M/\infty$ center, the network thread as an M/M/1 center and the worker threads together with the servers as an M/M/m center with $m$ equal to the number of worker threads in the system. We decided to model the worker threads together with the servers because we observed in sections 3.1, 3.2 and 4 that the response time is dominated by the server service time as long as the system is under-saturated. In the saturated phase the queueing time starts to become the dominating part in the middleware response time, for the network of queues model we only need to enter the server service time, because the queueing time will be predicted by the model. Furthermore we observed that the server service time is the same for every worker thread, which means that the model as described in \autoref{fig:7-3:1MW} should be able to model our system up to a reasonable accuracy. To predict the values, Octave \cite{octave} has been used with an extension for queueing models from which we used the implementation for closed networks \cite[ch. 5.2.2]{queueingLib}. The parameters $m_i$ defines the number of servers per center. As described above we set it to 0 for the $M/M/\infty$ center, to 1 for the M/M/1 center and to 'number of worker threads' for the M/M/m center.
-The $\mu_i$ parameters define the service time per center. For the $M/M/\infty$ center we set $\mu_i$ to 0.001s which is approximately the average network roundtrip time between clients and middlewares we measured during the experiments in section 3. For the M/M/1 center we set $\mu_i$ to 0.00001s which is approximately the average time a request spent in the network thread in the middleware.
-For the M/M/m model we used a load dependent service time which we set to the measured average server service time in \autoref{sec3.1}.
 
-\autoref{Table:NetworkOfQueues} (a) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. 
-\autoref{Table:NetworkOfQueues} (b) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. 
-\todo{compare measured vs predicted values from tables}
+\begin{figure}[H]
+    \includegraphics[width=.5\linewidth]{plots/NetworkOfQueues1MW.pdf}
+    \caption{Network of Queues for 1 Middleware}
+    \label{fig:7-3:1MW}
+\end{figure}
+\autoref{fig:7-3:1MW} shows our network of queues model for 1 middleware. We model the network latency as an $M/M/\infty$ center, the network thread as an M/M/1 center and the worker threads together with the servers as an M/M/m center with $m$ equal to the number of worker threads in the system. We decided to model the worker threads together with the servers because we observed in sections 3.1, 3.2 and 4 that the response time is dominated by the server service time as long as the system is under-saturated. In the saturated phase the queueing time starts to become the dominating part in the middleware response time, for the network of queues model we only need to input the server service time, because the queueing time will be predicted by the model. Furthermore we observed that the server service time is the same for every worker thread (given one specific number of worker threads), which means that the model as described in \autoref{fig:7-3:1MW} should be able to model our system up to a reasonable accuracy. To predict the values, Octave \cite{octave} has been used with an extension for queueing models from which we used the implementation for closed networks \cite[ch. 5.2.2]{queueingLib}. The parameters $m_i$ defines the number of servers per center. As described above we set it to 0 for the $M/M/\infty$ center, to 1 for the M/M/1 center and to 'number of worker threads' for the M/M/m center.
+The $\mu_i$ parameters define the service time per center. For the $M/M/\infty$ center we set $\mu_i$ to 0.001s which is approximately the average network roundtrip time between clients and middlewares we measured during the experiments in section 3. For the M/M/1 center we set $\mu_i$ to 0.00001s which is approximately the average time a request spent in the network thread in the middleware.
+For the M/M/m model we used a load dependent service time which we set to the average server service time measured in \autoref{sec3.1}.
+
+\autoref{Table:NetworkOfQueues} (a) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. While the model predicts the throughput quite accurately for 6 and 18 clients, its predictions are too high for 36 and 72 clients. For the response time we observe the best prediction for 36 clients. From the utilization we see that the utilization of the M/M/m center is predicted to be 96\% for 72 clients. This is close to the measured beginning of the saturation phase in \autoref{sec3.1} of 120 clients. The way our model is built we can only conclude that the bottleneck must be at the worker/server interaction.
+
+\autoref{Table:NetworkOfQueues} (b) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. For read-only workload the model predicts the throughput very accurately for all client configurations. Also the response time prediction is close to the measured values, only off by a constant factor for all clients.
+From the utilization we see that the utilization of the M/M/m center is predicted to be 97\% already for 16 clients. This is close to the measured beginning of the saturation phase in \autoref{sec3.1} of 6 clients. The way our model is built we can only conclude that the bottleneck must be at the worker/server interaction.
+
+The predicted queue length is too high for both types of workload and all clients.
+We conclude that while the model predicts throughput and response time very well for read-only workload, it fails to do so for write-only workload and for the queue length for any type of workload.
+Our model could be further extended on the client as well as on the server side, which might improve the prediction accuracy. 
 
 
 \subsubsection{Two Middlewares}
+\begin{figure}[H]
+    \includegraphics[width=.5\linewidth]{plots/NetworkOfQueues2MW.pdf}
+    \caption{Network of Queues for 2 Middlewars}
+    \label{fig:7-3:2MW}
+\end{figure}
 \autoref{fig:7-3:2MW} shows our network of queues model for 2 middlewares. The only difference compared to the queueing model with 1 middleware is, that there are now 2 M/M/1 centers and 2 M/M/m centers which correspond to 1 middleware each. The parameters $m_i$ define the number of servers per center. We again set $m_i$ to 0 for the $M/M/\infty$ center, to 1 for the M/M/1 center and to 'number of worker threads' for the M/M/m centers.
 The $\mu_i$ parameters define the service time per center. For the $M/M/\infty$ center we set $\mu_i$ to 0.001s which is approximately the average network roundtrip time between clients and middlewares that were measured during the experiments in section 3. For the M/M/1 center we set $\mu_i$ to 0.00001s which is approximately the average time a request spent in the network thread in the middleware.
 For the M/M/m model we used a load dependent service time which we set to the measured average server service time in \autoref{sec3.2}.
 
-\autoref{Table:NetworkOfQueues} (c) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. 
-\autoref{Table:NetworkOfQueues} (d) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. 
-\todo{compare measured vs predicted values from tables}
+\autoref{Table:NetworkOfQueues} (c) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}.
+For write-only workload \autoref{Table:NetworkOfQueues} (c) shows that the most accurate throughput prediction is achieved for 36 clients. For 6 and 18 clients the prediction is too low while for 72 clients it is too high. The same goes for the response time but inversely, meaning it is predicted too high for 6 and 18 clients and too low for 72 clients.
+From the utilization we see that the utilization of the M/M/m center is predicted to be 84\% for 72 clients. This is quite far from the measured beginning of the saturation phase in \autoref{sec3.2} of 196 clients. The way our model is built we can only conclude that the bottleneck must be at the worker/server interaction.
+
+
+\autoref{Table:NetworkOfQueues} (d) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. For read-only workload \autoref{Table:NetworkOfQueues} (d) shows good predictions for the throughput and the response times.
+From the utilization we see that the utilization of the M/M/m center is predicted to be 84\% for 18 clients. This is quite close to the measured beginning of the saturation phase in \autoref{sec3.2} of 6 clients. The way our model is built we can only conclude that the bottleneck must be at the worker/server interaction.
+
+
+The predicted queue length is again too high for both types of workload and all clients.
+Also for the model with two middlewares we conclude that while it offers a good base, it is unable to predict write-only throughput accurately. For read-only workload on the other hand the predictions are good, except for the queue length which is predicted too high. Same as in the one middleware model, the model at hand could be extended on the client as well as on the server side, which might improve the prediction accuracy.
+
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
@@ -1299,18 +1326,6 @@ For the M/M/m model we used a load dependent service time which we set to the me
     \caption{Predicted values for Network of Queues Model}
     \label{Table:NetworkOfQueues}
 \end{table}
-
-\begin{figure}
-    \includegraphics[width=.5\linewidth]{plots/NetworkOfQueues1MW.pdf}
-    \caption{Network of Queues for 1 Middleware}
-    \label{fig:7-3:1MW}
-\end{figure}
-
-\begin{figure}
-    \includegraphics[width=.5\linewidth]{plots/NetworkOfQueues2MW.pdf}
-    \caption{Network of Queues for 2 Middlewars}
-    \label{fig:7-3:2MW}
-\end{figure}
 
 \begin{thebibliography}{9}
 
