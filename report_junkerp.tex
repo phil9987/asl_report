@@ -470,7 +470,7 @@ The results in this section are based on the aggregated request logs from the tw
     \end{subfigure}
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/3_2b_throughputMiddleware.eps}
-        \caption{Throughput, write only}
+        \caption{Throughput, write only. Please note that for 64WT also 240 and 384 clients have been measured and found that the throughput does not increase further. We leave out these data points to show the same x-range as for the other graphs.}
     \end{subfigure}
 
     \caption{Throughput of baseline with two Middlewares, one Server, \autoref{sec3.2}}
@@ -640,7 +640,7 @@ The results in this section are based on the aggregated request logs from the tw
 \begin{figure}
     \centering
     \includegraphics[width=0.7\linewidth]{plots/4b_throughputMiddleware.eps}
-    \caption{Throughput of full system, write only, \autoref{sec4}}
+    \caption{Throughput of full system, write only, \autoref{sec4}. Please note that for 64WT also 240 and 384 clients have been measured and found that the throughput does not increase further. We leave out these data points to show the same x-range as for the other graphs.}
     \label{fig:4-throughput}
 \end{figure}
 
@@ -1322,14 +1322,14 @@ For the M/M/m model we used a load dependent service time which we set to the me
 \end{table}
 
 \begin{figure}
-    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues1MW.pdf}
+    \includegraphics[width=.5\linewidth]{plots/NetworkOfQueues1MW.pdf}
     \caption{Network of Queues for 1 Middleware}
     \label{fig:7-3:1MW}
 \end{figure}
 
 \begin{figure}
-    \includegraphics[width=.7\linewidth]{plots/NetworkOfQueues2MW.pdf}
-    \caption{Network of Queues for 1 Middleware}
+    \includegraphics[width=.5\linewidth]{plots/NetworkOfQueues2MW.pdf}
+    \caption{Network of Queues for 2 Middlewars}
     \label{fig:7-3:2MW}
 \end{figure}
 
