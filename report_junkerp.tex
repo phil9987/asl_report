@@ -4,6 +4,7 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{float}
 
 
 \usepackage{fancyhdr}
@@ -153,7 +154,7 @@ This is assumed to be acceptable for the setup of this project, because it match
 
 In this section, the maximum capacity of a single memcached server is examined. The measured throughput is presented as the total accumulated throughput from all three client machines. The number of clients represents the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per virtual client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations of the experiments are shown in \autoref{exp2-1}.
 
-\begin{table}
+\begin{table}[H]
     \centering
 	\begin{tabular}{|l|c|}
 		\hline Number of servers                        & 1                                 \\ 
@@ -222,7 +223,7 @@ Up until 120 clients the system is under-saturated because we observe an increas
 \subsection{Two Servers} \label{sec2.2}
 In this section, the maximum load generation capacity of a single memtier instance is examined. The measured throughput is presented as the total accumulated throughput of the two memtier threads. As before, the number of clients represents the total number of virtual clients across all three client machines. All results in this section are based on the output of memtier, which provides per second averages per client. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data was checked with the interactive law for both throughput and response time separately and it was found that the interactive law aligns with the measured data. The configurations of the experiment are shown in table \autoref{exp2-2}.
 
-\begin{table}
+\begin{table}[H]
     \centering
 	\begin{tabular}{|l|c|}
 		\hline Number of servers                        & 2                        \\ 
@@ -291,7 +292,7 @@ If we compare read-only and write only workload we observe response time which i
 
 
 \begin{center}
-\begin{table}
+\begin{table}[H]
 	\begin{tabular}{|l|p{2cm}|p{2cm}|p{7cm}|}
 		\hline                        & Read-only workload [req/s] & Write-only workload [req/s] & Configuration gives max. throughput \\ 
 		\hline One memcached server   &          2937          &      14791               &            read-only: 6 clients \newline write-only: 120 clients                         \\ 
@@ -310,11 +311,11 @@ If we compare read-only and write only workload we observe response time which i
 \subsection{One Middleware} \label{sec3.1}
 After establishing baselines for clients and memcached servers in \autoref{section2}, this section analyzes how adding my middleware to the system affects the performance. Due to the additional network hops from client to middleware and from middleware to server it is unavoidable that some additional latency is introduced. The middleware is designed to hide this latency with parallelism using its worker threads and, given a sufficient amount of parallelism, avoid becoming the bottleneck of the system.
 
-The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-1}.
+The results in this section are based on the aggregated request logs from the middleware. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp3-1}.
 
 
 
-\begin{table}
+\begin{table}[H]
     \centering
 	\begin{tabular}{|l|c|}
 		\hline Number of servers                & 1                        \\ 
@@ -443,9 +444,9 @@ For read-only workload we observe again a significantly higher response time com
 
 In this section the performance of two middlewares is investigated, splitting the load into two, connecting each client machine to both middlewares.
 
-The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp3-2}.
+The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp3-2}.
 
-\begin{table}
+\begin{table}[H]
     \centering
 	\begin{tabular}{|l|c|}
 		\hline Number of servers                & 1                        \\ 
@@ -576,14 +577,9 @@ For two middlewares and read-only workload a maximum throughput of 3k requests p
 
 As observed in Section 2.1 the response time for read-only workload is much higher compared to write-only workload. We expect this to be the same for this experiment and in addition observe how the queueing time in the middleware increases once the system reaches the saturation phase. Before the saturation phase, the server service time dominates the response time while in the saturation phase the queueing time does.
 
-
-
-
-
-
-\begin{table}
+\begin{table}[H]
     \begin{subtable}{1.0\linewidth}\centering
-    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{1.5cm}|}
     		\hline                                                   & Throughput [req/s]    & Response time [ms] & Avg. time in queue [ms] & Miss rate \\ 
     		\hline Reads: Measured on MW (8WT, 12 clients)   &     2939       &    3.1     & 0.79                & 0.0       \\ 
     		\hline Reads: Measured on clients (8WT, 12 clients)      &     2939       &    4.1      & n/a                   & 0.0       \\ 
@@ -595,7 +591,7 @@ As observed in Section 2.1 the response time for read-only workload is much high
 	\end{subtable}
 	
 	\begin{subtable}{1.0\linewidth}\centering
-    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{2cm}|}
+    	\begin{tabular}{|l|p{2cm}|p{2cm}|p{2cm}|p{1.5cm}|}
     		\hline                                                    & Throughput [req/s]    & Response time [ms] & Avg. time in queue [ms] & Miss rate \\ 
     		\hline Reads: Measured on MW (8WT, 12 clients)    &    2935        &   3.12      &   0.12              & 0.0       \\ 
     		\hline Reads: Measured on clients(8WT, 12 clients)        &    2935        &   4.08      & n/a                   & 0.0       \\ 
@@ -616,11 +612,11 @@ As observed in Section 2.1 the response time for read-only workload is much high
 \subsection{Full System} \label{sec4}
 The setup from the previous section is now expanded even further for write-only workload. In this experiment the effect of replication can be observed as each middleware is replicating the SET requests to all three memcached servers.
 
-The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp4}.
+The results in this section are based on the aggregated request logs from the two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. As before, the number of clients represents the total number of virtual clients across all three client machines. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp4}.
 %Connect three load generating VMs to two middlewares and three memchached servers. Run a write-only experiment. 
 %You need to plot throughput and response time measured on the middleware as a function of number of clients. The measurements have to be performed for 8, 16, 32 and 64 worker threads inside each middleware.
 
-\begin{table}
+\begin{table}[H]
     \centering
 	\begin{tabular}{|l|c|}
 		\hline Number of servers                & 3                         \\ 
@@ -668,9 +664,9 @@ The results in this section are based on the aggregated request logs from the tw
 \subsubsection{Explanation}
 
 %Provide a detailed analysis of the results (e.g., bottleneck analysis, component utilizations, average queue lengths, system saturation). Add any additional figures and experiments that help you illustrate your point and support your claims.
-Compared to \autoref{sec3.2} there are now 3 servers instead of 1 in the system. For write-only workload the middleware replicates each request to all 3 servers. This comes with some overhead because the middleware needs to send it to each server one by one and receive it one by one. However, this overhead is small compared to the difference in network latency between the servers. The way the middleware is built, it has to wait for the slowest server. \todo{add ping time table to make a point here}
+Compared to \autoref{sec3.2} there are now 3 servers instead of 1 in the system. For write-only workload the middleware replicates each request to all 3 servers. This comes with some overhead because the middleware needs to send it to each server one by one and receive it one by one. In addition, because of the way the middleware is built, it has to wait for the slowest server. We measured the ping times between the two middlewares and the single server for \autoref{sec3.2}, as well as for this experiment between the middlewares and the three servers and averaged the times per worker thread configuration. We did not observe a higher average ping time for the current section with the replication to three servers when looking at the slowest server. We conclude that the difference in server service time compared to \autoref{sec3.2} has to come from the overhead within the middleware, namely the uploading of the large request payload to 3 instead of 1 memcached server.
 In \autoref{fig:4-throughput} we observe a significantly lower maximum throughput for all worker thread configurations compared to \autoref{sec3.2}, namely between 12.5\% and 20\% less throughput from 8 up to 64 worker threads. When looking at \autoref{fig:4-times} we observe that the total response time is slightly higher compared to the one measured in \autoref{sec3.2}.
-At the maximum throughput configuration for each worker thread configuration (see \autoref{res4}) a difference of the peak service time (average time waiting for all responses from the memcached servers) compared to \autoref{sec3.2} has been measured of 0.33ms, 0.41ms, 0.9ms and 1.5ms for 8, 16, 32 and 64 worker threads respectively. We also observed that the average time in the queue differs also roughly by this time. The amount of requests in the queue has been observed to be similar compared to \autoref{sec3.2}. The higher memcached service time can be explained with the implementation of the middleware and the network structure of the system at hand in mind, where the middleware needs to wait for the response of the slowest memcached server before it can finish a request successfully and start to handle the next one.
+At the maximum throughput configuration for each worker thread configuration (see \autoref{res4}) a difference of the peak service time (average time waiting for all responses from the memcached servers) compared to \autoref{sec3.2} has been measured of 0.33ms, 0.41ms, 0.9ms and 1.5ms for 8, 16, 32 and 64 worker threads respectively. We also observed that the average time in the queue differs also roughly by this time. The amount of requests in the queue has been observed to be similar compared to \autoref{sec3.2}. 
 The aggregated and averaged machine stats collected with dstat do not show any machine bottleneck being reached. While in \autoref{sec3.2} the CPU of the memcached server was the bottleneck, the average CPU utilization of all three memcached servers is now around 80\% with 64 worker threads per middleware which is excluding the server CPU as the bottleneck for this experiment. We conclude that the increased service time due to the middleware implementation leads to a lower throughput, which leads to a lower arrival rate at the servers and therefore to less work per server. Hence we identify the bottleneck for this experiment as the middleware and expect the throughput to increase with more worker threads. And indeed, when performing the experiment using 128 worker threads per middleware, a further increase of the maximum throughput can be measured up until 14k requests per second - this confirms our hypothesis that the bottleneck lies at the middlewares until 64 worker threads, namely at the non sufficient parallelization.
 
 For 8 worker threads the system is under-saturated until 36 clients. From this point on, the system is saturated. This is concluded from the observation that the throughput does not increase with a higher amount of clients. Furthermore \autoref{fig:4-times} shows nicely how until 36 clients the dominating factor of the middleware response time is the server service time and from 36 clients on the dominating factor is the queueing time. This shows that from 36 clients on the middlewares are not able to immediately process incoming requests and the queue starts to grow with more clients.
@@ -680,15 +676,15 @@ No over-saturation of the system has been observed during this experiment
 \subsection{Summary}
 This section is concluded by presenting the maximum throughput as well as the average queueing time, the average queue length and the average server service time measured at the maximum throughput configuration for each worker thread configuration in \autoref{res4}. The configuration which has been identified as the maximum throughput configuration is mentioned in the first row of each column.
 
-When comparing the results of this experiment to the results obtained in \autoref{sec3.2} we observe significantly lower maximum throughputs of up to 20\%. The reason for this is the replication, for which the middleware has to wait until it receives an answer from the slowest (or furthest away) memcached server. We have observed that the increase in server service time is mainly due to different network latencies of the 3 servers.
+When comparing the results of this experiment to the results obtained in \autoref{sec3.2} we observe significantly lower maximum throughputs of up to 20\%. The reason for this is the replication, for which the middleware has to send the request to 3 instead of 1 memcached servers and wait until it receives an answer from the slowest (or furthest away) memcached server. We have concluded that the increase in total server service time (all 3 servers together) is not due to different server ping times but comes from the overhead of sending the request 3 times instead of only once.
 
-Compared to \autoref{sec3.2} the servers are no longer the bottleneck for any of the worker thread configurations in this experiments. We concluded that for all worker thread configurations the middleware is the bottleneck and that the reason for this is the higher server service time, which leads to a lower arrival rate at the memcached servers. This is because our system is closed and the clients need to wait for a response from the middleware before sending the next request.
+Compared to \autoref{sec3.2} the servers are no longer the bottleneck for any of the worker thread configurations in this experiments. We concluded that for all worker thread configurations the middleware is the bottleneck and that the reason for this is the higher total server service time, which leads to a lower arrival rate at the memcached servers. This is because our system is closed and the clients need to wait for a response from the middleware before sending the next request.
 \todo{Mention queue time, service time}
 
 
 
 \begin{center}
-\begin{table}
+\begin{table}[H]
 	\begin{tabular}{|l|p{1.7cm}|p{1.7cm}|p{1.75cm}|p{1.75cm}|}
 		\hline                                              & WT=8, 36 clients & WT=16, 72 clients    & WT=32, 120 clients    & WT=64, 192 clients   \\ 
 		\hline Throughput (MW) [req/s]                      & 7110              & 9158                & 10817                 & 12568                 \\ 
@@ -700,41 +696,42 @@ Compared to \autoref{sec3.2} the servers are no longer the bottleneck for any of
 		\hline Avg. time waiting for memcached [ms]         & 2.21            & 3.46                & 5.87                & 10.09                 \\ 
 		\hline 
 	\end{tabular}
-	\caption{Maximum throughput for the full system in \autoref{sec4}} \label{res4}
+	\caption{Maximum throughput for the full system in \autoref{sec4}} 
+	\label{res4}
 \end{table}
 \end{center}
 
 \section{Gets and Multi-gets (90 pts)}
-
-This section analyzes the effect on throughput and response time of sharding MULTIGET requests.
 %For multi-GET workloads, memtier will generate a mixture of SETs, GETs, and multi-GETs. Memtier only allows to specify the maximum number of keys in a multi-GET request. Therefore, be aware that requests can also contain fewer keys than the provided value. It is recommended to record the average size of the multi-GETs. You will have to measure response time on the client as a function of multi-get size, with and without sharding on the middlewares.
+This section analyzes the effect on throughput and response time of sharding MULTIGET requests. \autoref{exp5} shows the setup and different configurations that were examined for this section.
+
+\begin{center}
+    \begin{table}[H]
+        \centering
+    	\begin{tabular}{|l|c|}
+    		\hline Number of servers                & 3                            \\ 
+    		\hline Number of client machines        & 3                            \\ 
+    		\hline Instances of memtier per machine & 2                            \\ 
+    		\hline Threads per memtier instance     & 1                            \\
+    		\hline Virtual clients per thread       & 2                		       \\ 
+    		\hline Workload                         & ratio=1:$<$Multi-Get size$>$ \\
+    		\hline Multi-Get behavior               & Sharded and Non-Sharded      \\
+    		\hline Multi-Get size                   & [1, 3, 6 9]                  \\
+    		\hline Number of middlewares            & 2                            \\
+    		\hline Worker threads per middleware    & 64                           \\
+    		\hline Repetitions                      & 3                            \\ 
+    		\hline 
+    	\end{tabular}
+    	\caption{Experiment configurations for \autoref{sec5.1} and \autoref{sec5.2}} 
+    	\label{exp5}
+    \end{table}
+\end{center}
 
 \subsection{Sharded Case} \label{sec5.1}
 
 %Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding enabled (multi-gets are broken up into smaller multi-gets and spread across servers). Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th 
-The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp5-1}.
+The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp5}.
 
-
-\begin{center}
-    \begin{table}
-        \centering
-    	\begin{tabular}{|l|c|}
-    		\hline Number of servers                & 3                       \\ 
-    		\hline Number of client machines        & 3                       \\ 
-    		\hline Instances of memtier per machine & 2                       \\ 
-    		\hline Threads per memtier instance     & 1                       \\
-    		\hline Virtual clients per thread       & 2     		            \\ 
-    		\hline Workload                         & ratio=1:$<$Multi-Get size$>$             \\
-    		\hline Multi-Get behavior               & Sharded                 \\
-    		\hline Multi-Get size                   & [1, 3, 6, 9]            \\
-    		\hline Number of middlewares            & 2                       \\
-    		\hline Worker threads per middleware    & 64                      \\
-    		\hline Repetitions                      & 3                       \\ 
-    		\hline 
-    	\end{tabular}
-    	\caption{Experiment configurations for \autoref{sec5.1}} \label{exp5-1}
-    \end{table}
-\end{center}
 
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
@@ -764,28 +761,8 @@ For 6 keys per request the system almost reaches its saturation phase, with the 
 
 \subsection{Non-sharded Case} \label{sec5.2}
 %Run multi-gets with 1, 3, 6 and 9 keys (memtier configuration) with sharding disabled. Plot average response time as measured on the client, as well as the 25th, 50th, 75th, 90th and 99th percentiles.
-The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined for this section are shown in \autoref{exp5-2}.
+The results in this section are based on the aggregated request logs from the two middlewares as well as the aggregated output data from the three memtier clients. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. No misses occurred during the test and all client requests were processed and answered. All plots show averages and standard deviations across three repetitions of each configuration. The sanity of the data has been checked with the interactive law for both throughput and response time separately for all configurations and it was found that the interactive law aligns with the measured data. The configurations examined and the setup for this section are shown in \autoref{exp5}.
 
-\begin{center}
-    \begin{table}
-        \centering
-    	\begin{tabular}{|l|c|}
-    		\hline Number of servers                & 3                            \\ 
-    		\hline Number of client machines        & 3                            \\ 
-    		\hline Instances of memtier per machine & 2                            \\ 
-    		\hline Threads per memtier instance     & 1                            \\
-    		\hline Virtual clients per thread       & 2                		       \\ 
-    		\hline Workload                         & ratio=1:$<$Multi-Get size$>$ \\
-    		\hline Multi-Get behavior               & Non-Sharded                  \\
-    		\hline Multi-Get size                   & [1, 3, 6 9]                  \\
-    		\hline Number of middlewares            & 2                            \\
-    		\hline Worker threads per middleware    & 64                           \\
-    		\hline Repetitions                      & 3                            \\ 
-    		\hline 
-    	\end{tabular}
-    	\caption{Experiment configurations for \autoref{sec5.2}} \label{exp5-2}
-    \end{table}
-\end{center}
 
 \subsubsection{Explanation}
 
@@ -806,7 +783,7 @@ For sharded and non-sharded independently we observe a shift from memtier to mid
 Furthermore, the sharded histograms we observe larger buckets for higher response times. This can be explained with reference to the way the middleware handles sharded multiget requests. For sharded multiget requests the middleware splits the request into equally sized parts (if, like in the case at hand, the number of keys is divisible by the number of servers), sends one part after another to each server and then waits for an answer from each server. Similar as in \autoref{sec3.2} server service time is now at least the service time of the slowest server for every request while in the non-sharded case, in average, only every third request is sent to the slowest (or furthest) away memcached server. \todo{add ping times to show difference between server latencies, explain why this is the main factor of the service time}
 
 
-\begin{figure}
+\begin{figure}[H]
     \begin{subfigure}{.5\textwidth}
         \includegraphics[width=1\linewidth]{plots/logSection5c_histogramMemtier.eps}
         \caption{Memtier, Sharded}
@@ -838,7 +815,7 @@ For sharded and non-sharded independently we observe a shift from memtier to mid
 \section{2K Analysis (90 pts)}
 %Repeat the experiment for (a)~a write-only and (b)~a read-only workload. For each of the two workloads, what is the impact of these parameters on throughput, respectively response time?
 
-In this section, a 2k analysis for k=3 is being performed. With this, the impact of the number of memcached servers, the number of worker threads and the number of middlewares (as well as any combination of these) on throughput and response time is derived. The following parameter choices are being investigated:
+In this section, a 2k analysis for k=3 is being performed based on the theory provided in the exercise sessions \cite{2k}. With this, the impact of the number of memcached servers, the number of worker threads and the number of middlewares (as well as any combination of these) on throughput and response time is derived. The following parameter choices are being investigated:
 
 \begin{itemize}
 		
@@ -851,8 +828,8 @@ In this section, a 2k analysis for k=3 is being performed. With this, the impact
 For the 2k analysis the parameters will be set to -1 for the first choice and 1 for the second choice.
 
 
-\begin{center}
-	\scriptsize{
+\begin{table}[H]
+    \centering
 		\begin{tabular}{|l|c|}
 			\hline Number of servers                & 1 and 3                                     \\ 
 			\hline Number of client machines        & 3                                           \\ 
@@ -865,13 +842,14 @@ For the 2k analysis the parameters will be set to -1 for the first choice and 1 
 			\hline Repetitions                      & 3                                   \\ 
 			\hline 
 		\end{tabular}
-	} 
-\end{center}
+		\caption{Experiment configurations for \autoref{sec6.1} and \autoref{sec6.2}}
+		\label{exp6}
+\end{table}
 
 \subsection{Read-only Workload}\label{sec6.1}
 
-\autoref{2k:read-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a read-only workload. The additive 2k factorial design has been used because based on the experiments of the previous sections, for read-only workload, no multiplicative effects are expected between the tested parameters.
-The results in this section are based on the aggregated request logs from the one or two middlewares. The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. For this section the error has been calculated as the sum of squared standard deviation errors over all 3 runs. The configurations examined for this section are shown in \autoref{exp4}.
+\autoref{2k:read-only} shows parameters and combinations of them, measured throughput and response time, allocation of variance and derived effect sizes under a read-only workload. The additive 2k factorial design has been used because ,based on observations during experiments of the previous sections, for read-only workload no multiplicative effects are expected between the tested parameters.
+The results in this section are based on the aggregated request logs from the middleware(s). The first and last three seconds of each of the three repetitions were cut off as startup and cooldown time, leaving 60 seconds of data per repetition. As a sanity check, the same data has been extracted from the aggregated memtier client outputs, compared and found to align well. No misses occurred during the test and all client requests were processed and answered. For this section the error has been calculated as the sum of squared standard deviation errors over all 3 runs. The configurations examined and the setup for this section are shown in \autoref{exp6}.
 
 \autoref{2k:read-only} (b) shows the allocation of variance per parameter for the throughput and we observe that $x_b$, the number of memcached servers, is with close to 100\% the only dominating factor for the throughput of the system for read-only workload. In \autoref{2k:read-only} (a) we see that $q_b$, the effect size of $x_b$, is positive, which leads us to the conclusion that more servers lead to a higher throughput. In section 2 we measured for read-only throughput an increase of factor 2 when having 2 instead of 1 servers. We also observed in section 2 that for read-only workload the outgoing network capacity of the memcached server is the bottleneck. Therefore we notice in this 2k analysis that for read-only workload the main factor which positively affects the throughput is the number of servers. This is because each server leads to a throughput increase of roughly 3k requests per second.
 Furthermore we notice that throughput and response time must be in close relationship. We expect that factors which strongly influence throughput, inversely influence response time in an equally strong way. This is confirmed when looking at \autoref{2k:read-only} (c) and (d) where we again observe the allocation of variance for $x_b$ close to 100\% but this time the effect size with a negative value.
@@ -1027,13 +1005,13 @@ Note that for queuing models it is enough to use the experimental results from t
 
 \subsection{M/M/1} \label{sec7.1}
 %Build queuing model based on Section 4 (write-only throughput) for each worker-thread configuration of the middleware. Use one M/M/1 queue to model your entire system. Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
-In this section we build a queueing model for each worker thread configuration of the middleware based on \autoref{sec4}. We use an M/M/1 model based on \todo{add ref} to model the entire system. This model assumes a single server (in our case the middleware) with an infinite buffer (in our case queue) with first-come-first-serve policy. As input parameters our model takes the service rate $\mu$ [requests/second] and the arrival rate $\lambda$ [requests/second]. The service rate $\mu$ we approximate by taking the maximum measured throughput over all runs of the tested number of clients of \autoref{sec4}. The arrival rate $\lambda$ is set to the average throughput measured in \autoref{sec4} for a given amount of clients, this assumption is made because we are in a closed system.
+In this section we build a queueing model for each worker thread configuration of the middleware based on \autoref{sec4}. We use an M/M/1 model based on the formulas given in \cite{book1} to model the entire system. This model assumes a single server (in our case the middleware) with an infinite buffer (in our case queue) with first-come-first-serve policy. As input parameters our model takes the service rate $\mu$ [requests/second] and the arrival rate $\lambda$ [requests/second]. The service rate $\mu$ we approximate by taking the maximum measured throughput over all runs of the tested number of clients of \autoref{sec4}. The arrival rate $\lambda$ is set to the average throughput measured in \autoref{sec4} for a given amount of clients, this assumption is made because we are in a closed system.
 With the model, we predict the expected response time $E[r]$, the expected queue size $E[n_q]$ and the expected queue waiting time $E[w]$.
 
 \autoref{mm1} shows the predicted values of these parameters for 8, 16, 32 and 64 worker threads respectively and for the same number of clients as in \autoref{sec4}. The predicted values were obtained using the described M/M/1 model and the observed values are from \autoref{sec4}.
 \autoref{fig:mm1-RT} shows the predicted response times next to the observed response times. We observe that the predicted response times are too low for 6, 18 and 36 clients and too high for 192 clients. We observe that even thought the predicted values are not close to the measured ones we see a trend that the response time for 64 worker threads is lower than for 8, 16 and 32 worker threads.
-\todo{explain why this model does not model our system very well. - model too simplistic. In our model it is not possible that more than numClients requests are in queue, in model this is possible
-}
+
+This model is too simplistic to model our system accurately because it assumes that there is only a single queue and a single worker. Furthermore it cannot model a closed system which we can see at the queue size which increases higher than the number of clients, in a closed system like ours this is not possible because every client waits for a response before sending the next request.
 
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
@@ -1128,13 +1106,13 @@ With the model, we predict the expected response time $E[r]$, the expected queue
 
 \subsection{M/M/m} \label{sec7.2}
 %Build an M/M/m model based on Section 4, where each middleware worker thread is represented as one service.  Motivate your choice of input parameters to the model. Explain for which experiments the predictions of the model match and for which they do not.
-In this section we build a queueing model for each worker thread configuration of the middleware based on \autoref{sec4}. We use an M/M/m model based on \todo{add ref} to model the entire system. Each worker thread in our system is seen as a server and therefore the number of server m in our model is equal to the  number of worker threads inside the middleware. Except for this, the input parameters are the same as for the M/M/1 model described in \autoref{sec7.1}, namely takes the service rate $\mu$ [requests/second] and the arrival rate $\lambda$ [requests/second]. The arrival rate $\lambda$ is set again to the average throughput measured in \autoref{sec4} for a given amount of clients, this assumption is made because we are in a closed system and hence a client only sends a request after it got the response from the previous request. The service rate $\mu$ is set to the maximum measured throughput over all runs of the tested number of clients in \autoref{sec4} divided by $m$ (number of servers in our model = number of worker threads in the system). 
+In this section we build a queueing model for each worker thread configuration of the middleware based on \autoref{sec4}. We use an M/M/m model based on the formulas given in \cite{book1} to model the entire system. Each worker thread in our system is seen as a server and therefore the number of server m in our model is equal to the  number of worker threads inside the middleware. Except for this, the input parameters are the same as for the M/M/1 model described in \autoref{sec7.1}, namely takes the service rate $\mu$ [requests/second] and the arrival rate $\lambda$ [requests/second]. The arrival rate $\lambda$ is set again to the average throughput measured in \autoref{sec4} for a given amount of clients, this assumption is made because we are in a closed system and hence a client only sends a request after it got the response from the previous request. The service rate $\mu$ is set to the maximum measured throughput over all runs of the tested number of clients in \autoref{sec4} divided by $m$ (number of servers in our model = number of worker threads in the system). 
 With the model, we predict the expected response time $E[r]$, the expected queue size $E[n_q]$ and the expected queue waiting time $E[w]$.
 
 \autoref{MMm} shows the predicted values of these parameters for 8, 16, 32 and 64 worker threads respectively and for the same number of clients as in \autoref{sec4}. The predicted values were obtained using the described M/M/m model and the observed values are the ones measured during the experiments of \autoref{sec4}.
 \autoref{fig:mmm-RT} shows the predicted response times next to the observed response times. We observe that compared to the M/M/1 model the response times are now higher for 6, 18 and 36 clients, however they are still not close to the measured values. 
-\todo{explain why this model does not model our system very well. - model assumes a single queue, cannot model well 2 MW case
-}
+
+This model models our system a bit better than the M/M/1 model because it takes the number of worker threads as an input parameter. However, also this model is not able to model a closed system and also it cannot model the situation at hand where we have 2 queues because of the two middlewares.
 
 \begin{figure}
     \begin{subfigure}{.5\textwidth}
@@ -1231,13 +1209,13 @@ With the model, we predict the expected response time $E[r]$, the expected queue
 % A: You need to consider both 1 and 2 middleware configuration. You need to analyze both read only and write only workloads. You can set the number of worker threads to the constant that delivers highest throughput.
 Using a network of queues we are able to model our system more accurately. In this section we will explore the setup of 1 middleware and 2 middlewares as well as read-only and write-only workload. We will compare the results to the measurements of \autoref{sec3.1} and \autoref{sec3.2}. The network of queues allows us to use load dependent service times and to model a closed system, which should lead to more accurate predictions.
 \subsubsection{One Middleware}
-\autoref{fig:7-3:1MW} shows our network of queues model for 1 middleware. We model the network latency as an $M/M/\infty$ center, the network thread as an M/M/1 center and the worker threads together with the servers as an M/M/m center with $m$ equal to the number of worker threads in the system. We decided to model the worker threads together with the servers because we observed in sections 3.1, 3.2 and 4 that the response time is dominated by the server service time as long as the system is under-saturated. In the saturated phase the queueing time starts to become the dominating part in the middleware response time, for the network of queues model we only need to enter the server service time, because the queueing time will be predicted by the model. Furthermore we observed that the server service time is the same for every worker thread, which means that the model as described in \autoref{fig:7-3:1MW} should be able to model our system up to a reasonable accuracy. To predict the values the implementation for Octave \todo{add reference to https://www.moreno.marzolla.name/software/queueing/} has been used with an extension for queueing models. The parameters $m_i$ defines the number of servers per center. As described above we set it to 0 for the $M/M/\infty$ center, to 1 for the M/M/1 center and to 'number of worker threads' for the M/M/m center.
+\autoref{fig:7-3:1MW} shows our network of queues model for 1 middleware. We model the network latency as an $M/M/\infty$ center, the network thread as an M/M/1 center and the worker threads together with the servers as an M/M/m center with $m$ equal to the number of worker threads in the system. We decided to model the worker threads together with the servers because we observed in sections 3.1, 3.2 and 4 that the response time is dominated by the server service time as long as the system is under-saturated. In the saturated phase the queueing time starts to become the dominating part in the middleware response time, for the network of queues model we only need to enter the server service time, because the queueing time will be predicted by the model. Furthermore we observed that the server service time is the same for every worker thread, which means that the model as described in \autoref{fig:7-3:1MW} should be able to model our system up to a reasonable accuracy. To predict the values, Octave \cite{octave} has been used with an extension for queueing models from which we used the implementation for closed networks \cite[ch. 5.2.2]{queueingLib}. The parameters $m_i$ defines the number of servers per center. As described above we set it to 0 for the $M/M/\infty$ center, to 1 for the M/M/1 center and to 'number of worker threads' for the M/M/m center.
 The $\mu_i$ parameters define the service time per center. For the $M/M/\infty$ center we set $\mu_i$ to 0.001s which is approximately the average network roundtrip time between clients and middlewares we measured during the experiments in section 3. For the M/M/1 center we set $\mu_i$ to 0.00001s which is approximately the average time a request spent in the network thread in the middleware.
 For the M/M/m model we used a load dependent service time which we set to the measured average server service time in \autoref{sec3.1}.
 
 \autoref{Table:NetworkOfQueues} (a) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. 
 \autoref{Table:NetworkOfQueues} (b) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.1}. 
-\todo{add measured values to tables and compare them}
+\todo{compare measured vs predicted values from tables}
 
 
 \subsubsection{Two Middlewares}
@@ -1247,14 +1225,13 @@ For the M/M/m model we used a load dependent service time which we set to the me
 
 \autoref{Table:NetworkOfQueues} (c) shows the measured and predicted values for the network of queues for write-only workload. The number of worker threads in the M/M/m center in our model was set to 8 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. 
 \autoref{Table:NetworkOfQueues} (d) shows the measured and predicted values for the network of queues for read-only workload. The number of worker threads in the M/M/m center in our model was set to 64 worker threads because this was the worker thread configuration which achieved the highest throughput in \autoref{sec3.2}. 
-\todo{add measured values to tables and compare them}
-
+\todo{compare measured vs predicted values from tables}
 
 \begin{table}
     \begin{subtable}{1.0\linewidth}\centering
         \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}} & \multicolumn{2}{|c|}{\textbf{72}}\\
+        \textbf{\# Clients} & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}} & \multicolumn{2}{|c|}{\textbf{72}}\\
         \hline
          & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
         \hline
@@ -1270,7 +1247,7 @@ For the M/M/m model we used a load dependent service time which we set to the me
     \begin{subtable}{1.0\linewidth}\centering
         \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{12}} & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}}\\
+        \textbf{\# Clients} & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{12}} & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}}\\
         \hline
          & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
         \hline
@@ -1287,7 +1264,7 @@ For the M/M/m model we used a load dependent service time which we set to the me
     \begin{subtable}{1.0\linewidth}\centering
         \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}} & \multicolumn{2}{|c|}{\textbf{72}}\\
+        \textbf{\# Clients} & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}} & \multicolumn{2}{|c|}{\textbf{72}}\\
         \hline
          & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
         \hline
@@ -1305,7 +1282,7 @@ For the M/M/m model we used a load dependent service time which we set to the me
     \begin{subtable}{1.0\linewidth}\centering
         \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|}
         \hline
-        \# Clients & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{12}} & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}}\\
+        \textbf{\# Clients} & \multicolumn{2}{|c|}{\textbf{6}}  & \multicolumn{2}{|c|}{\textbf{12}} & \multicolumn{2}{|c|}{\textbf{18}} & \multicolumn{2}{|c|}{\textbf{36}}\\
         \hline
          & \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} &  \textbf{pred.} & \textbf{meas.} \\
         \hline
@@ -1315,9 +1292,9 @@ For the M/M/m model we used a load dependent service time which we set to the me
         Utilization [\%] & 0.18 & - & 0.55 & - & 0.84 & - & 0.95 & -\\
         \hline
         \end{tabular}
-    \caption{1 Middleware, Read-Only, 8 Worker Threads per Middleware }
+    \caption{2 Middlewares, Read-Only, 8 Worker Threads per Middleware }
     \end{subtable}
-    \caption{Predicted values of Network of Queues}
+    \caption{Predicted values for Network of Queues Model}
     \label{Table:NetworkOfQueues}
 \end{table}
 
@@ -1332,5 +1309,28 @@ For the M/M/m model we used a load dependent service time which we set to the me
     \caption{Network of Queues for 2 Middlewars}
     \label{fig:7-3:2MW}
 \end{figure}
+
+\begin{thebibliography}{9}
+
+\bibitem{book1}
+  Raj Jain,
+  \textit{The Art of Computer Systems Performance Analysis},
+  Wiley Professional Computing, 1st edition, 1991.
+
+\bibitem{queueingLib}
+    Moreno Marzolla,
+    \textit{A Queueing Package for GNU Octave},
+    \url{https://www.moreno.marzolla.name/software/queueing/queueing.html}
+    
+\bibitem{octave}
+    GNU,
+    \textit{Octave: A scientific programming language},
+    \url{https://www.gnu.org/software/octave/}
+
+\bibitem{2k}
+    ASL exercise session 7, 2018,
+    \textit{2k Factorial Design},
+    \url{https://www.systems.ethz.ch/sites/default/files/07-2k-analysis.pdf}
+\end{thebibliography}
 
 \end{document}
